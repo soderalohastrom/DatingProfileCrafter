@@ -26,10 +26,12 @@ export const profiles = pgTable("profiles", {
   dateCreated: timestamp("date_created").defaultNow(),
 });
 
+// Create the insert schema, omitting auto-generated fields
 export const insertProfileSchema = createInsertSchema(profiles).omit({ 
   id: true,
   dateCreated: true 
 });
 
+// Export types for use in components
 export type InsertProfile = z.infer<typeof insertProfileSchema>;
 export type Profile = typeof profiles.$inferSelect;

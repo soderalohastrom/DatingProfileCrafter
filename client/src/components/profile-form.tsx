@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { insertProfileSchema, type Profile } from "@shared/schema";
+import { insertProfileSchema, type Profile, type InsertProfile } from "@shared/schema";
 import {
   Form,
   FormControl,
@@ -22,15 +22,22 @@ interface ProfileFormProps {
 
 export default function ProfileForm({ profile, onChange }: ProfileFormProps) {
   const { toast } = useToast();
-  const form = useForm({
+  const form = useForm<InsertProfile>({
     resolver: zodResolver(insertProfileSchema),
     defaultValues: {
-      ...profile,
-      age: profile.age || 0,
+      personId: profile.personId || String(Math.random()).slice(2, 8),
+      firstName: profile.firstName || "",
+      age: profile.age || 18,
+      location: profile.location || "",
+      occupation: profile.occupation || "",
+      education: profile.education || "",
+      interests: profile.interests || "",
+      bio: profile.bio || "",
+      photoUrl: profile.photoUrl || "https://via.placeholder.com/400x400",
     },
   });
 
-  const onSubmit = async (data: Profile) => {
+  const onSubmit = async (data: InsertProfile) => {
     try {
       await apiRequest("POST", "/api/profiles", data);
       toast({
@@ -77,7 +84,7 @@ export default function ProfileForm({ profile, onChange }: ProfileFormProps) {
                   type="number" 
                   {...field} 
                   onChange={(e) => {
-                    const value = parseInt(e.target.value) || 0;
+                    const value = parseInt(e.target.value) || 18;
                     field.onChange(value);
                     onChange({ ...profile, age: value });
                   }}
