@@ -13,7 +13,6 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
 
 interface ProfileFormProps {
   profile: Partial<Profile>;
@@ -25,7 +24,6 @@ export default function ProfileForm({ profile, onChange }: ProfileFormProps) {
   const form = useForm<InsertProfile>({
     resolver: zodResolver(insertProfileSchema),
     defaultValues: {
-      personId: profile.personId || String(Math.random()).slice(2, 8),
       firstName: profile.firstName || "",
       age: profile.age || 18,
       location: profile.location || "",
@@ -39,10 +37,19 @@ export default function ProfileForm({ profile, onChange }: ProfileFormProps) {
 
   const onSubmit = async (data: InsertProfile) => {
     try {
-      await apiRequest("POST", "/api/profiles", data);
+      const response = await fetch("/api/profiles", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to save profile");
+      }
+
       toast({
-        title: "Profile saved",
-        description: "Your profile has been saved successfully",
+        title: "Success",
+        description: "Profile saved successfully",
       });
     } catch (error) {
       toast({
@@ -84,7 +91,7 @@ export default function ProfileForm({ profile, onChange }: ProfileFormProps) {
                   type="number" 
                   {...field} 
                   onChange={(e) => {
-                    const value = parseInt(e.target.value) || 18;
+                    const value = parseInt(e.target.value);
                     field.onChange(value);
                     onChange({ ...profile, age: value });
                   }}

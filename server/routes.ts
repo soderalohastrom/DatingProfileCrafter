@@ -5,12 +5,25 @@ import { insertProfileSchema } from "@shared/schema";
 import { ZodError } from "zod";
 
 export async function registerRoutes(app: Express) {
-  app.get("/api/profiles/:personId", async (req, res) => {
-    const profile = await storage.getProfileByPersonId(req.params.personId);
-    if (!profile) {
-      return res.status(404).json({ message: "Profile not found" });
+  app.get("/api/profiles", async (_req, res) => {
+    try {
+      const profiles = await storage.getAllProfiles();
+      res.json(profiles);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch profiles" });
     }
-    res.json(profile);
+  });
+
+  app.get("/api/profiles/:id", async (req, res) => {
+    try {
+      const profile = await storage.getProfile(parseInt(req.params.id));
+      if (!profile) {
+        return res.status(404).json({ message: "Profile not found" });
+      }
+      res.json(profile);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch profile" });
+    }
   });
 
   app.post("/api/profiles", async (req, res) => {
@@ -27,10 +40,10 @@ export async function registerRoutes(app: Express) {
     }
   });
 
-  app.patch("/api/profiles/:personId", async (req, res) => {
+  app.patch("/api/profiles/:id", async (req, res) => {
     try {
       const updates = insertProfileSchema.partial().parse(req.body);
-      const profile = await storage.updateProfile(req.params.personId, updates);
+      const profile = await storage.updateProfile(parseInt(req.params.id), updates);
       res.json(profile);
     } catch (error) {
       if (error instanceof ZodError) {

@@ -3,17 +3,22 @@ import { db } from "./db";
 import { eq } from "drizzle-orm";
 
 export interface IStorage {
-  getProfileByPersonId(personId: string): Promise<Profile | undefined>;
+  getAllProfiles(): Promise<Profile[]>;
+  getProfile(id: number): Promise<Profile | undefined>;
   createProfile(profile: InsertProfile): Promise<Profile>;
-  updateProfile(personId: string, profile: Partial<InsertProfile>): Promise<Profile>;
+  updateProfile(id: number, profile: Partial<InsertProfile>): Promise<Profile>;
 }
 
 export class DatabaseStorage implements IStorage {
-  async getProfileByPersonId(personId: string): Promise<Profile | undefined> {
+  async getAllProfiles(): Promise<Profile[]> {
+    return await db.select().from(profiles);
+  }
+
+  async getProfile(id: number): Promise<Profile | undefined> {
     const [profile] = await db
       .select()
       .from(profiles)
-      .where(eq(profiles.personId, personId));
+      .where(eq(profiles.id, id));
     return profile;
   }
 
@@ -26,13 +31,13 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateProfile(
-    personId: string,
+    id: number,
     updates: Partial<InsertProfile>
   ): Promise<Profile> {
     const [profile] = await db
       .update(profiles)
       .set(updates)
-      .where(eq(profiles.personId, personId))
+      .where(eq(profiles.id, id))
       .returning();
 
     if (!profile) {
