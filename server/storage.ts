@@ -1,4 +1,6 @@
 import { profiles, type Profile, type InsertProfile } from "@shared/schema";
+import { db } from "./db";
+import { eq } from "drizzle-orm";
 
 export interface IStorage {
   getProfileByPersonId(personId: string): Promise<Profile | undefined>;
@@ -6,38 +8,39 @@ export interface IStorage {
   updateProfile(personId: string, profile: Partial<InsertProfile>): Promise<Profile>;
 }
 
-export class MemStorage implements IStorage {
-  private profiles: Map<string, Profile>;
-  private currentId: number;
-
-  constructor() {
-    this.profiles = new Map();
-    this.currentId = 1;
-  }
-
+export class DatabaseStorage implements IStorage {
   async getProfileByPersonId(personId: string): Promise<Profile | undefined> {
-    return Array.from(this.profiles.values()).find(
-      (profile) => profile.personId === personId
-    );
-  }
-
-  async createProfile(insertProfile: InsertProfile): Promise<Profile> {
-    const id = this.currentId++;
-    const profile: Profile = { ...insertProfile, id };
-    this.profiles.set(insertProfile.personId, profile);
+    const [profile] = await db
+      .select()
+      .from(profiles)
+      .where(eq(profiles.personId, personId));
     return profile;
   }
 
-  async updateProfile(personId: string, updates: Partial<InsertProfile>): Promise<Profile> {
-    const existing = await this.getProfileByPersonId(personId);
-    if (!existing) {
+  async createProfile(insertProfile: InsertProfile): Promise<Profile> {
+    const [profile] = await db
+      .insert(profiles)
+      .values(insertProfile)
+      .returning();
+    return profile;
+  }
+
+  async updateProfile(
+    personId: string,
+    updates: Partial<InsertProfile>
+  ): Promise<Profile> {
+    const [profile] = await db
+      .update(profiles)
+      .set(updates)
+      .where(eq(profiles.personId, personId))
+      .returning();
+
+    if (!profile) {
       throw new Error("Profile not found");
     }
 
-    const updated = { ...existing, ...updates };
-    this.profiles.set(personId, updated);
-    return updated;
+    return profile;
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
