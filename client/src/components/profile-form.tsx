@@ -24,7 +24,10 @@ export default function ProfileForm({ profile, onChange }: ProfileFormProps) {
   const { toast } = useToast();
   const form = useForm({
     resolver: zodResolver(insertProfileSchema),
-    defaultValues: profile,
+    defaultValues: {
+      ...profile,
+      age: profile.age || 0,
+    },
   });
 
   const onSubmit = async (data: Profile) => {
@@ -62,7 +65,7 @@ export default function ProfileForm({ profile, onChange }: ProfileFormProps) {
             </FormItem>
           )}
         />
-        
+
         <FormField
           control={form.control}
           name="age"
@@ -74,9 +77,12 @@ export default function ProfileForm({ profile, onChange }: ProfileFormProps) {
                   type="number" 
                   {...field} 
                   onChange={(e) => {
-                    field.onChange(e);
-                    onChange({ ...profile, age: parseInt(e.target.value) });
-                  }} 
+                    const value = parseInt(e.target.value) || 0;
+                    field.onChange(value);
+                    onChange({ ...profile, age: value });
+                  }}
+                  min={18}
+                  max={120}
                 />
               </FormControl>
               <FormMessage />
