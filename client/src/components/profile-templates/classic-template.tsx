@@ -110,14 +110,14 @@ export default function ClassicTemplate({
   // Slide 2: Bio and Secondary Photo
   const BioSlide = (
     <SlideWrapper id="slide-2">
-      <div className="h-full grid grid-cols-2">
+      <div className="h-full grid" style={{ gridTemplateColumns: '3fr 1fr' }}>
         <div className="p-16 space-y-8">
           <h3 className="text-5xl font-light uppercase tracking-wide mb-8">Biography</h3>
           <p className="text-2xl text-muted-foreground leading-relaxed whitespace-pre-wrap">{profile.bio}</p>
         </div>
         <div className="flex items-center justify-center bg-black/5">
           <Avatar 
-            className="w-[600px] h-[600px] cursor-pointer hover:opacity-90 transition-opacity"
+            className="w-[400px] h-[400px] cursor-pointer hover:opacity-90 transition-opacity"
             onClick={() => setImageSelector("bio")}
           >
             <AvatarImage src={profile.photoUrl} alt="Bio photo" className="object-cover" />
@@ -133,18 +133,7 @@ export default function ClassicTemplate({
   // Slide 3: Matchmaker's Take
   const MatchmakerSlide = (
     <SlideWrapper id="slide-3">
-      <div className="h-full grid grid-cols-2">
-        <div 
-          className="relative cursor-pointer hover:opacity-90 transition-opacity"
-          onClick={() => setImageSelector("matchmaker")}
-        >
-          <Avatar className="w-full h-full rounded-none">
-            <AvatarImage src={profile.photoUrl} alt="Matchmaker photo" className="object-cover" />
-            <AvatarFallback className="rounded-none">
-              <Camera className="w-24 h-24 text-muted-foreground" />
-            </AvatarFallback>
-          </Avatar>
-        </div>
+      <div className="h-full grid" style={{ gridTemplateColumns: '3fr 1fr' }}>
         <div className="p-16 space-y-8">
           <h3 className="text-5xl font-light uppercase tracking-wide">Matchmaker's Take</h3>
           <Textarea
@@ -158,6 +147,17 @@ export default function ClassicTemplate({
               }
             }}
           />
+        </div>
+        <div 
+          className="relative cursor-pointer hover:opacity-90 transition-opacity"
+          onClick={() => setImageSelector("matchmaker")}
+        >
+          <Avatar className="w-full h-full rounded-none">
+            <AvatarImage src={profile.photoUrl} alt="Matchmaker photo" className="object-cover" />
+            <AvatarFallback className="rounded-none">
+              <Camera className="w-24 h-24 text-muted-foreground" />
+            </AvatarFallback>
+          </Avatar>
         </div>
       </div>
     </SlideWrapper>
