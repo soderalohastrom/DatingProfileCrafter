@@ -145,8 +145,15 @@ export default function ProfileMaker() {
             </div>
           </ResizablePanel>
           <ResizablePanel defaultSize={60} minSize={30}>
-            <div className="p-6">
-              <div id="profile-template">
+            <div className="p-6 overflow-auto">
+              <div 
+                id="profile-template"
+                className="transform scale-[0.4] origin-top-left"
+                style={{
+                  width: '1920px',
+                  marginBottom: '-60%' 
+                }}
+              >
                 <ProfileTemplate
                   profile={profile}
                   template={template}
