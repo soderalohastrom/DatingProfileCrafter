@@ -7,27 +7,31 @@ A dynamic web application for creating and managing dating profiles with multipl
 ### Profile Management
 - Real-time profile editing with live preview
 - Multiple template styles:
-  - Slides (3-page layout)
-  - Modern
-  - Classic
-  - Minimal
+  - Modern: Contemporary design with gradient accents
+  - Classic: Traditional elegant layout
+  - Minimal: Clean, minimalist design
 - Profile data synchronization between form and preview
 - URL parameter-based profile loading (`?profile_id={id}`)
 
 ### Templates
-- **Slides Template (Default)**:
-  - Slide 1: Main profile information
-  - Slide 2: Bio with image selector
-  - Slide 3: Matchmaker's Take with full-height image and editable text area
-- Modern Template: Contemporary layout with gradient accents
-- Classic Template: Traditional profile layout
-- Minimal Template: Clean, minimalist design
+Each template includes a consistent 3-slide layout:
+- **Slide 1: Main Profile**
+  - Primary profile information
+  - Key details (location, occupation, education)
+  - Professional headshot
+- **Slide 2: Biography**
+  - Extended bio text
+  - Secondary profile image
+- **Slide 3: Matchmaker's Take**
+  - Full-height profile image
+  - Customizable matchmaker observations
 
 ### Image Management
 - Image selector modal for profile photos
-- Multiple image placement options
+- Multiple image placement options per slide
 - Clickable avatar elements to trigger image selection
 - Support for different image positions in templates
+- Standardized 16:9 aspect ratio (1920x1080px)
 
 ### Export Options
 - Export to multiple PNG images (one per slide)
@@ -70,8 +74,9 @@ A dynamic web application for creating and managing dating profiles with multipl
 ### Template System
 - Each template is a separate component
 - Unified interface for all templates
-- Supports different layout structures
+- Consistent 3-slide structure
 - Common image selection system
+- Standardized 16:9 aspect ratio
 
 ### Export System
 - Uses html2canvas for PNG generation
