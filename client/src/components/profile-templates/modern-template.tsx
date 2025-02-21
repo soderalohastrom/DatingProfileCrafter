@@ -21,74 +21,67 @@ export default function ModernTemplate({ profile, onUpdatePhoto }: ModernTemplat
 
   return (
     <>
-      <Card className="w-full max-w-3xl mx-auto overflow-hidden">
-        <div className="bg-gradient-to-r from-primary/10 to-primary/5 p-6">
-          <div className="flex flex-col md:flex-row gap-6 items-center md:items-start">
-            <Avatar 
-              className="w-32 h-32 border-4 border-white shadow-lg cursor-pointer hover:opacity-90 transition-opacity"
-              onClick={() => setImageSelector("main")}
-            >
-              <AvatarImage src={profile.photoUrl} alt={profile.firstName} />
-              <AvatarFallback>{profile.firstName?.[0]}</AvatarFallback>
-            </Avatar>
-            <div className="text-center md:text-left">
-              <h2 className="text-4xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-                {profile.firstName}, {profile.age}
-              </h2>
-              <div className="flex items-center justify-center md:justify-start gap-2 mt-2 text-muted-foreground">
-                <MapPin className="w-4 h-4" />
-                <span>{profile.location}</span>
+      <Card 
+        className="w-[1920px] h-[1080px] mx-auto overflow-hidden"
+        style={{ aspectRatio: '16/9' }}
+      >
+        <div className="h-full flex flex-col">
+          {/* Header Section */}
+          <div className="bg-gradient-to-r from-primary/10 to-primary/5 p-16">
+            <div className="flex gap-16 items-start">
+              <Avatar 
+                className="w-[300px] h-[300px] border-4 border-white shadow-lg cursor-pointer hover:opacity-90 transition-opacity"
+                onClick={() => setImageSelector("main")}
+              >
+                <AvatarImage src={profile.photoUrl} alt={profile.firstName} />
+                <AvatarFallback>{profile.firstName?.[0]}</AvatarFallback>
+              </Avatar>
+              <div>
+                <h2 className="text-7xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                  {profile.firstName}, {profile.age}
+                </h2>
+                <div className="flex items-center gap-3 mt-6 text-muted-foreground text-2xl">
+                  <MapPin className="w-8 h-8" />
+                  <span>{profile.location}</span>
+                </div>
               </div>
+            </div>
+          </div>
+
+          {/* Content Section */}
+          <div className="flex-1 p-16 space-y-16">
+            <div className="grid grid-cols-2 gap-16">
+              <div className="space-y-4">
+                <div className="flex items-center gap-4 text-primary">
+                  <Briefcase className="w-10 h-10" />
+                  <h3 className="text-3xl font-semibold">Career</h3>
+                </div>
+                <p className="text-2xl">{profile.occupation}</p>
+              </div>
+
+              <div className="space-y-4">
+                <div className="flex items-center gap-4 text-primary">
+                  <GraduationCap className="w-10 h-10" />
+                  <h3 className="text-3xl font-semibold">Education</h3>
+                </div>
+                <p className="text-2xl">{profile.education}</p>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div className="flex items-center gap-4 text-primary">
+                <Heart className="w-10 h-10" />
+                <h3 className="text-3xl font-semibold">Interests</h3>
+              </div>
+              <p className="text-2xl">{profile.interests}</p>
+            </div>
+
+            <div className="space-y-4">
+              <h3 className="text-3xl font-semibold">About Me</h3>
+              <p className="text-2xl text-muted-foreground">{profile.bio}</p>
             </div>
           </div>
         </div>
-
-        <CardContent className="p-6 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 text-primary">
-                <Briefcase className="w-5 h-5" />
-                <h3 className="font-semibold">Career</h3>
-              </div>
-              <p>{profile.occupation}</p>
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 text-primary">
-                <GraduationCap className="w-5 h-5" />
-                <h3 className="font-semibold">Education</h3>
-              </div>
-              <p>{profile.education}</p>
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 text-primary">
-              <Heart className="w-5 h-5" />
-              <h3 className="font-semibold">Interests</h3>
-            </div>
-            <p>{profile.interests}</p>
-          </div>
-
-          <div>
-            <h3 className="text-lg font-semibold mb-2">About Me</h3>
-            <p className="text-muted-foreground">{profile.bio}</p>
-          </div>
-
-          <div className="border-t pt-6">
-            <div className="flex items-center justify-center">
-              <Avatar 
-                className="w-24 h-24 cursor-pointer hover:opacity-90 transition-opacity"
-                onClick={() => setImageSelector("secondary")}
-              >
-                <AvatarImage src={profile.photoUrl} alt="Secondary photo" />
-                <AvatarFallback>
-                  <Camera className="w-8 h-8 text-muted-foreground" />
-                </AvatarFallback>
-              </Avatar>
-            </div>
-          </div>
-        </CardContent>
       </Card>
 
       <ImageSelector
