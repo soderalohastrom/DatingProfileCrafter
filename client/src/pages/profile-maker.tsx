@@ -3,10 +3,11 @@ import ProfileForm from "@/components/profile-form";
 import ProfileTemplate from "@/components/profile-templates";
 import { Button } from "@/components/ui/button";
 import { Download, Image } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { Profile } from "@shared/schema";
 import type { TemplateType } from "@/components/profile-templates";
 import { exportToPDF, exportToImage } from "@/lib/export-utils";
+import { useQuery } from "@tanstack/react-query";
 import {
   Select,
   SelectContent,
@@ -16,6 +17,10 @@ import {
 } from "@/components/ui/select";
 
 export default function ProfileMaker() {
+  const { data: profiles } = useQuery({
+    queryKey: ["/api/profiles"],
+  });
+
   const [profile, setProfile] = useState<Partial<Profile>>({
     firstName: "",
     age: 18,
@@ -26,6 +31,13 @@ export default function ProfileMaker() {
     bio: "",
     photoUrl: "https://via.placeholder.com/400x400",
   });
+
+  // Load the first profile when data is available
+  useEffect(() => {
+    if (profiles && profiles.length > 0) {
+      setProfile(profiles[0]);
+    }
+  }, [profiles]);
 
   const [template, setTemplate] = useState<TemplateType>("modern");
 
