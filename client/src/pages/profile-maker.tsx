@@ -7,6 +7,7 @@ import { useState, useEffect } from "react";
 import type { Profile } from "@shared/schema";
 import type { TemplateType } from "@/components/profile-templates";
 import { exportToPDF, exportToImages } from "@/lib/export-utils";
+import { triggerConfetti } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import {
   Select,
@@ -50,8 +51,15 @@ export default function ProfileMaker() {
     }
   }, [profiles]);
 
-  const handleExportPDF = () => exportToPDF();
-  const handleExportImages = () => exportToImages();
+  const handleExportPDF = async () => {
+    await exportToPDF();
+    triggerConfetti(); // Celebrate PDF export
+  };
+
+  const handleExportImages = async () => {
+    await exportToImages();
+    triggerConfetti(); // Celebrate PNG export
+  };
 
   const handleProfileChange = (profileId: string) => {
     if (profileId === "clear") {

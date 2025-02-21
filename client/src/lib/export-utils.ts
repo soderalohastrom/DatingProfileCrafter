@@ -7,7 +7,7 @@ export async function exportToImages(): Promise<void> {
 
   try {
     let index = 1;
-    for (const slide of slides) {
+    for (const slide of Array.from(slides)) {
       const canvas = await html2canvas(slide as HTMLElement, {
         scale: 2,
         useCORS: true,
@@ -23,6 +23,7 @@ export async function exportToImages(): Promise<void> {
     }
   } catch (error) {
     console.error("Failed to export images:", error);
+    throw error; // Re-throw to prevent confetti if export fails
   }
 }
 
@@ -37,7 +38,7 @@ export async function exportToPDF(): Promise<void> {
     });
 
     let isFirstPage = true;
-    for (const slide of slides) {
+    for (const slide of Array.from(slides)) {
       const canvas = await html2canvas(slide as HTMLElement, {
         scale: 2,
         useCORS: true,
@@ -60,5 +61,6 @@ export async function exportToPDF(): Promise<void> {
     pdf.save("dating-profile.pdf");
   } catch (error) {
     console.error("Failed to export PDF:", error);
+    throw error; // Re-throw to prevent confetti if export fails
   }
 }
