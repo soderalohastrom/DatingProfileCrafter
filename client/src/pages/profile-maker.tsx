@@ -33,7 +33,7 @@ export default function ProfileMaker() {
     photoUrl: "https://via.placeholder.com/400x400",
   });
 
-  const [template, setTemplate] = useState<TemplateType>("slides");
+  const [template, setTemplate] = useState<TemplateType>("modern");
   const [matchmakerTake, setMatchmakerTake] = useState("");
 
   // Load profile from URL parameter on mount
@@ -128,7 +128,6 @@ export default function ProfileMaker() {
               <SelectValue placeholder="Select template" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="slides">Slides Template</SelectItem>
               <SelectItem value="modern">Modern Template</SelectItem>
               <SelectItem value="classic">Classic Template</SelectItem>
               <SelectItem value="minimal">Minimal Template</SelectItem>
@@ -146,12 +145,12 @@ export default function ProfileMaker() {
           </ResizablePanel>
           <ResizablePanel defaultSize={60} minSize={30}>
             <div className="p-6 overflow-auto">
-              <div 
+              <div
                 id="profile-template"
                 className="transform scale-[0.4] origin-top-left"
                 style={{
                   width: '1920px',
-                  marginBottom: '-60%' 
+                  marginBottom: '-60%'
                 }}
               >
                 <ProfileTemplate

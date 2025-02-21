@@ -2,9 +2,8 @@ import { type Profile } from "@shared/schema";
 import ModernTemplate from "./modern-template";
 import ClassicTemplate from "./classic-template";
 import MinimalTemplate from "./minimal-template";
-import SlideTemplate from "./slide-template";
 
-export type TemplateType = "modern" | "classic" | "minimal" | "slides";
+export type TemplateType = "modern" | "classic" | "minimal";
 
 interface ProfileTemplateProps {
   profile: Partial<Profile>;
@@ -20,21 +19,13 @@ export default function ProfileTemplate({
   onUpdateMatchmakerTake 
 }: ProfileTemplateProps) {
   switch (template) {
-    case "slides":
-      return (
-        <SlideTemplate 
-          profile={profile} 
-          onUpdatePhoto={onUpdatePhoto}
-          onUpdateMatchmakerTake={onUpdateMatchmakerTake}
-        />
-      );
     case "modern":
-      return <ModernTemplate profile={profile} onUpdatePhoto={onUpdatePhoto} />;
+      return <ModernTemplate profile={profile} onUpdatePhoto={onUpdatePhoto} onUpdateMatchmakerTake={onUpdateMatchmakerTake} />;
     case "classic":
-      return <ClassicTemplate profile={profile} />;
+      return <ClassicTemplate profile={profile} onUpdatePhoto={onUpdatePhoto} onUpdateMatchmakerTake={onUpdateMatchmakerTake} />;
     case "minimal":
-      return <MinimalTemplate profile={profile} />;
+      return <MinimalTemplate profile={profile} onUpdatePhoto={onUpdatePhoto} onUpdateMatchmakerTake={onUpdateMatchmakerTake} />;
     default:
-      return <SlideTemplate profile={profile} onUpdatePhoto={onUpdatePhoto} />;
+      return <ModernTemplate profile={profile} onUpdatePhoto={onUpdatePhoto} onUpdateMatchmakerTake={onUpdateMatchmakerTake} />;
   }
 }
