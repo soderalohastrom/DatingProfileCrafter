@@ -137,7 +137,11 @@ export default function ProfileMaker() {
           <ResizablePanel defaultSize={60} minSize={30}>
             <div className="p-6">
               <div id="profile-template">
-                <ProfileTemplate profile={profile} template={template} />
+                <ProfileTemplate
+                  profile={profile}
+                  template={template}
+                  onUpdatePhoto={(url) => setProfile({ ...profile, photoUrl: url })}
+                />
               </div>
             </div>
           </ResizablePanel>
