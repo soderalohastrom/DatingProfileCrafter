@@ -32,54 +32,98 @@ export default function ProfileMaker() {
     photoUrl: "https://via.placeholder.com/400x400",
   });
 
-  // Load the first profile when data is available
+  const [template, setTemplate] = useState<TemplateType>("modern");
+
+  // Load profile from URL parameter on mount
   useEffect(() => {
-    if (profiles && profiles.length > 0) {
+    const params = new URLSearchParams(window.location.search);
+    const profileId = params.get('profile_id');
+
+    if (profiles?.length && profileId) {
+      const selectedProfile = profiles.find(p => p.id === parseInt(profileId));
+      if (selectedProfile) {
+        setProfile(selectedProfile);
+      }
+    } else if (profiles?.length) {
       setProfile(profiles[0]);
     }
   }, [profiles]);
 
-  const [template, setTemplate] = useState<TemplateType>("modern");
-
   const handleExportPDF = () => exportToPDF("profile-template");
   const handleExportImage = () => exportToImage("profile-template");
+
+  const handleProfileChange = (profileId: string) => {
+    if (profileId === "clear") {
+      setProfile({
+        firstName: "",
+        age: 18,
+        location: "",
+        occupation: "",
+        education: "",
+        interests: "",
+        bio: "",
+        photoUrl: "https://via.placeholder.com/400x400",
+      });
+      return;
+    }
+
+    const selectedProfile = profiles?.find(p => p.id === parseInt(profileId));
+    if (selectedProfile) {
+      setProfile(selectedProfile);
+    }
+  };
 
   return (
     <div className="h-screen bg-background">
       <div className="container mx-auto py-6">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold">Dating Profile Maker</h1>
-          <div className="flex items-center gap-4">
-            <Button
-              variant="outline"
-              onClick={handleExportImage}
-              className="flex items-center gap-2"
-            >
-              <Image className="w-4 h-4" />
-              Export PNG
-            </Button>
-            <Button
-              variant="outline"
-              onClick={handleExportPDF}
-              className="flex items-center gap-2"
-            >
-              <Download className="w-4 h-4" />
-              Export PDF
-            </Button>
-            <Select
-              value={template}
-              onValueChange={(value) => setTemplate(value as TemplateType)}
-            >
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Select template" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="modern">Modern Template</SelectItem>
-                <SelectItem value="classic">Classic Template</SelectItem>
-                <SelectItem value="minimal">Minimal Template</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+        <h1 className="text-3xl font-bold mb-4">Dating Profile Maker</h1>
+        <div className="flex flex-wrap gap-4 items-center mb-6">
+          <Select
+            value={profile.id?.toString() || ""}
+            onValueChange={handleProfileChange}
+          >
+            <SelectTrigger className="w-[200px]">
+              <SelectValue placeholder="Select profile" />
+            </SelectTrigger>
+            <SelectContent>
+              {profiles?.map((p) => (
+                <SelectItem key={p.id} value={p.id.toString()}>
+                  Profile: {p.firstName}
+                </SelectItem>
+              ))}
+              <SelectItem value="clear">Clear List</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Button
+            variant="outline"
+            onClick={handleExportImage}
+            className="flex items-center gap-2"
+          >
+            <Image className="w-4 h-4" />
+            Export PNG
+          </Button>
+          <Button
+            variant="outline"
+            onClick={handleExportPDF}
+            className="flex items-center gap-2"
+          >
+            <Download className="w-4 h-4" />
+            Export PDF
+          </Button>
+          <Select
+            value={template}
+            onValueChange={(value) => setTemplate(value as TemplateType)}
+          >
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Select template" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="modern">Modern Template</SelectItem>
+              <SelectItem value="classic">Classic Template</SelectItem>
+              <SelectItem value="minimal">Minimal Template</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
         <ResizablePanelGroup
           direction="horizontal"
