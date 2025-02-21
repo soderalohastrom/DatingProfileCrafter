@@ -5,6 +5,7 @@ import { Briefcase, GraduationCap, Heart, MapPin, Camera } from "lucide-react";
 import { useState } from "react";
 import ImageSelector from "../image-selector";
 import { Textarea } from "@/components/ui/textarea";
+import ImageCropper from "../image-cropper";
 
 interface ModernTemplateProps {
   profile: Partial<Profile>;
@@ -35,6 +36,11 @@ export default function ModernTemplate({
 }: ModernTemplateProps) {
   const [imageSelector, setImageSelector] = useState<"main" | "bio" | "matchmaker" | null>(null);
   const [matchmakerTake, setMatchmakerTake] = useState("");
+  const [imagePositions, setImagePositions] = useState({
+    main: { x: 0, y: 0, scale: 1 },
+    bio: { x: 0, y: 0, scale: 1 },
+    matchmaker: { x: 0, y: 0, scale: 1 }
+  });
 
   const handleImageSelect = (url: string) => {
     if (onUpdatePhoto) {
@@ -48,13 +54,13 @@ export default function ModernTemplate({
       <div className="h-full flex flex-col">
         <div className="bg-gradient-to-r from-primary/10 to-primary/5 p-16">
           <div className="flex gap-16 items-start">
-            <Avatar 
-              className="w-[300px] h-[300px] border-4 border-white shadow-lg cursor-pointer hover:opacity-90 transition-opacity"
-              onClick={() => setImageSelector("main")}
-            >
-              <AvatarImage src={profile.photoUrl} alt={profile.firstName} />
-              <AvatarFallback>{profile.firstName?.[0]}</AvatarFallback>
-            </Avatar>
+            <div className="relative" onClick={() => setImageSelector("main")}>
+              <ImageCropper
+                src={profile.photoUrl}
+                placeholderClassName="w-[300px] h-[300px] rounded-full border-4 border-white shadow-lg cursor-pointer hover:opacity-90 transition-opacity"
+                onPositionChange={(pos) => setImagePositions(prev => ({ ...prev, main: pos }))}
+              />
+            </div>
             <div>
               <h2 className="text-7xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
                 {profile.firstName}, {profile.age}
@@ -107,15 +113,13 @@ export default function ModernTemplate({
           <p className="text-2xl text-muted-foreground whitespace-pre-wrap">{profile.bio}</p>
         </div>
         <div className="flex items-center justify-center bg-gradient-to-br from-primary/5 to-primary/10">
-          <Avatar 
-            className="w-[400px] h-[400px] cursor-pointer hover:opacity-90 transition-opacity"
-            onClick={() => setImageSelector("bio")}
-          >
-            <AvatarImage src={profile.photoUrl} alt="Bio photo" className="object-cover" />
-            <AvatarFallback>
-              <Camera className="w-24 h-24 text-muted-foreground" />
-            </AvatarFallback>
-          </Avatar>
+          <div className="relative" onClick={() => setImageSelector("bio")}>
+            <ImageCropper
+              src={profile.photoUrl}
+              placeholderClassName="w-[400px] h-[400px] rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+              onPositionChange={(pos) => setImagePositions(prev => ({ ...prev, bio: pos }))}
+            />
+          </div>
         </div>
       </div>
     </SlideWrapper>
@@ -126,15 +130,15 @@ export default function ModernTemplate({
     <SlideWrapper id="slide-3">
       <div className="h-full grid" style={{ gridTemplateColumns: '1fr 3fr' }}>
         <div 
-          className="relative cursor-pointer hover:opacity-90 transition-opacity"
+          className="relative cursor-pointer"
           onClick={() => setImageSelector("matchmaker")}
         >
-          <Avatar className="w-full h-full rounded-none">
-            <AvatarImage src={profile.photoUrl} alt="Matchmaker photo" className="object-cover" />
-            <AvatarFallback className="rounded-none">
-              <Camera className="w-24 h-24 text-muted-foreground" />
-            </AvatarFallback>
-          </Avatar>
+          <ImageCropper
+            src={profile.photoUrl}
+            placeholderClassName="w-full h-full"
+            aspectRatio={9/16}
+            onPositionChange={(pos) => setImagePositions(prev => ({ ...prev, matchmaker: pos }))}
+          />
         </div>
         <div className="p-16 space-y-8">
           <h3 className="text-5xl font-semibold">Matchmaker's Take</h3>
