@@ -6,7 +6,7 @@ import { Download, Image } from "lucide-react";
 import { useState, useEffect } from "react";
 import type { Profile } from "@shared/schema";
 import type { TemplateType } from "@/components/profile-templates";
-import { exportToPDF, exportToImage } from "@/lib/export-utils";
+import { exportToPDF, exportToImages } from "@/lib/export-utils";
 import { useQuery } from "@tanstack/react-query";
 import {
   Select,
@@ -32,7 +32,8 @@ export default function ProfileMaker() {
     photoUrl: "https://via.placeholder.com/400x400",
   });
 
-  const [template, setTemplate] = useState<TemplateType>("modern");
+  const [template, setTemplate] = useState<TemplateType>("slides");
+  const [matchmakerTake, setMatchmakerTake] = useState("");
 
   // Load profile from URL parameter on mount
   useEffect(() => {
@@ -49,8 +50,8 @@ export default function ProfileMaker() {
     }
   }, [profiles]);
 
-  const handleExportPDF = () => exportToPDF("profile-template");
-  const handleExportImage = () => exportToImage("profile-template");
+  const handleExportPDF = () => exportToPDF();
+  const handleExportImages = () => exportToImages();
 
   const handleProfileChange = (profileId: string) => {
     if (profileId === "clear") {
@@ -97,11 +98,11 @@ export default function ProfileMaker() {
 
           <Button
             variant="outline"
-            onClick={handleExportImage}
+            onClick={handleExportImages}
             className="flex items-center gap-2"
           >
             <Image className="w-4 h-4" />
-            Export PNG
+            Export PNGs
           </Button>
           <Button
             variant="outline"
@@ -119,6 +120,7 @@ export default function ProfileMaker() {
               <SelectValue placeholder="Select template" />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="slides">Slides Template</SelectItem>
               <SelectItem value="modern">Modern Template</SelectItem>
               <SelectItem value="classic">Classic Template</SelectItem>
               <SelectItem value="minimal">Minimal Template</SelectItem>
@@ -141,6 +143,7 @@ export default function ProfileMaker() {
                   profile={profile}
                   template={template}
                   onUpdatePhoto={(url) => setProfile({ ...profile, photoUrl: url })}
+                  onUpdateMatchmakerTake={setMatchmakerTake}
                 />
               </div>
             </div>
