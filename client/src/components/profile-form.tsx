@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { useEffect } from "react";
 
 interface ProfileFormProps {
   profile: Partial<Profile>;
@@ -24,6 +25,20 @@ export default function ProfileForm({ profile, onChange }: ProfileFormProps) {
   const form = useForm<InsertProfile>({
     resolver: zodResolver(insertProfileSchema),
     defaultValues: {
+      firstName: "",
+      age: 18,
+      location: "",
+      occupation: "",
+      education: "",
+      interests: "",
+      bio: "",
+      photoUrl: "https://via.placeholder.com/400x400",
+    },
+  });
+
+  // Reset form when profile changes
+  useEffect(() => {
+    form.reset({
       firstName: profile.firstName || "",
       age: profile.age || 18,
       location: profile.location || "",
@@ -32,8 +47,8 @@ export default function ProfileForm({ profile, onChange }: ProfileFormProps) {
       interests: profile.interests || "",
       bio: profile.bio || "",
       photoUrl: profile.photoUrl || "https://via.placeholder.com/400x400",
-    },
-  });
+    });
+  }, [profile, form.reset]);
 
   const onSubmit = async (data: InsertProfile) => {
     try {
