@@ -122,7 +122,18 @@ export default function MinimalTemplate({
   // Slide 3: Matchmaker's Take
   const MatchmakerSlide = (
     <SlideWrapper id="slide-3">
-      <div className="h-full grid" style={{ gridTemplateColumns: '3fr 1fr' }}>
+      <div className="h-full grid" style={{ gridTemplateColumns: '1fr 3fr' }}>
+        <div 
+          className="relative cursor-pointer hover:opacity-90 transition-opacity"
+          onClick={() => setImageSelector("matchmaker")}
+        >
+          <Avatar className="w-full h-full rounded-none">
+            <AvatarImage src={profile.photoUrl} alt="Matchmaker photo" className="object-cover" />
+            <AvatarFallback className="rounded-none">
+              <Camera className="w-24 h-24 text-muted-foreground" />
+            </AvatarFallback>
+          </Avatar>
+        </div>
         <div className="p-24 space-y-12">
           <span className="block text-lg uppercase tracking-wide text-muted-foreground">
             Matchmaker's Take
@@ -138,17 +149,6 @@ export default function MinimalTemplate({
               }
             }}
           />
-        </div>
-        <div 
-          className="relative cursor-pointer hover:opacity-90 transition-opacity"
-          onClick={() => setImageSelector("matchmaker")}
-        >
-          <Avatar className="w-full h-full rounded-none">
-            <AvatarImage src={profile.photoUrl} alt="Matchmaker photo" className="object-cover" />
-            <AvatarFallback className="rounded-none">
-              <Camera className="w-24 h-24 text-muted-foreground" />
-            </AvatarFallback>
-          </Avatar>
         </div>
       </div>
     </SlideWrapper>

@@ -124,7 +124,18 @@ export default function ModernTemplate({
   // Slide 3: Matchmaker's Take
   const MatchmakerSlide = (
     <SlideWrapper id="slide-3">
-      <div className="h-full grid" style={{ gridTemplateColumns: '3fr 1fr' }}>
+      <div className="h-full grid" style={{ gridTemplateColumns: '1fr 3fr' }}>
+        <div 
+          className="relative cursor-pointer hover:opacity-90 transition-opacity"
+          onClick={() => setImageSelector("matchmaker")}
+        >
+          <Avatar className="w-full h-full rounded-none">
+            <AvatarImage src={profile.photoUrl} alt="Matchmaker photo" className="object-cover" />
+            <AvatarFallback className="rounded-none">
+              <Camera className="w-24 h-24 text-muted-foreground" />
+            </AvatarFallback>
+          </Avatar>
+        </div>
         <div className="p-16 space-y-8">
           <h3 className="text-5xl font-semibold">Matchmaker's Take</h3>
           <Textarea
@@ -138,17 +149,6 @@ export default function ModernTemplate({
               }
             }}
           />
-        </div>
-        <div 
-          className="relative cursor-pointer hover:opacity-90 transition-opacity"
-          onClick={() => setImageSelector("matchmaker")}
-        >
-          <Avatar className="w-full h-full rounded-none">
-            <AvatarImage src={profile.photoUrl} alt="Matchmaker photo" className="object-cover" />
-            <AvatarFallback className="rounded-none">
-              <Camera className="w-24 h-24 text-muted-foreground" />
-            </AvatarFallback>
-          </Avatar>
         </div>
       </div>
     </SlideWrapper>
