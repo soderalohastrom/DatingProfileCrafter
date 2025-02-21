@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/select";
 
 export default function ProfileMaker() {
-  const { data: profiles } = useQuery({
+  const { data: profiles = [] } = useQuery<Profile[]>({
     queryKey: ["/api/profiles"],
   });
 
@@ -39,12 +39,12 @@ export default function ProfileMaker() {
     const params = new URLSearchParams(window.location.search);
     const profileId = params.get('profile_id');
 
-    if (profiles?.length && profileId) {
+    if (profiles.length && profileId) {
       const selectedProfile = profiles.find(p => p.id === parseInt(profileId));
       if (selectedProfile) {
         setProfile(selectedProfile);
       }
-    } else if (profiles?.length) {
+    } else if (profiles.length) {
       setProfile(profiles[0]);
     }
   }, [profiles]);
@@ -67,7 +67,7 @@ export default function ProfileMaker() {
       return;
     }
 
-    const selectedProfile = profiles?.find(p => p.id === parseInt(profileId));
+    const selectedProfile = profiles.find(p => p.id === parseInt(profileId));
     if (selectedProfile) {
       setProfile(selectedProfile);
     }
@@ -86,7 +86,7 @@ export default function ProfileMaker() {
               <SelectValue placeholder="Select profile" />
             </SelectTrigger>
             <SelectContent>
-              {profiles?.map((p) => (
+              {profiles.map((p) => (
                 <SelectItem key={p.id} value={p.id.toString()}>
                   Profile: {p.firstName}
                 </SelectItem>
