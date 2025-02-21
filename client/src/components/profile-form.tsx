@@ -14,6 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect } from "react";
+import { triggerConfetti } from "@/lib/utils";
 
 interface ProfileFormProps {
   profile: Partial<Profile>;
@@ -61,6 +62,9 @@ export default function ProfileForm({ profile, onChange }: ProfileFormProps) {
       if (!response.ok) {
         throw new Error("Failed to save profile");
       }
+
+      // Trigger confetti animation on successful profile creation
+      triggerConfetti();
 
       toast({
         title: "Success",
