@@ -21,12 +21,6 @@ export default function TemplateManagement() {
       <div className="flex justify-between items-center mb-6">
         <div className="flex items-center gap-4">
           <h1 className="text-3xl font-bold">Template Management</h1>
-          <Button
-            variant="outline"
-            onClick={handleNavigateHome}
-          >
-            Done
-          </Button>
         </div>
         <div className="flex items-center gap-4">
           <Button
@@ -60,6 +54,14 @@ export default function TemplateManagement() {
         {/* Theme Editor */}
         <div className="col-span-9">
           <TemplateEditor theme={selectedTheme} />
+          <div className="mt-4">
+            <Button
+              variant="outline"
+              onClick={handleNavigateHome}
+            >
+              Done
+            </Button>
+          </div>
         </div>
       </div>
     </div>
