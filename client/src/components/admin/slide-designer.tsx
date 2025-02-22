@@ -188,11 +188,10 @@ export default function SlideDesigner({
             ? defaultImageProperties
             : {
               ...defaultTextProperties,
-              // Use the field ID as the name property for text elements
               name: selectedField?.id || 'customText',
-              // Store the display label for the form
               label: selectedField?.label || 'Custom Text'
             },
+      content: newElement.elementType === "image" ? "image_placeholder" : newElement.content,
     };
 
     elementMutation.mutate(elementData as InsertSlideElement);
@@ -247,7 +246,7 @@ export default function SlideDesigner({
                   setNewElement({
                     ...newElement,
                     elementType: value,
-                    content: value === "text" ? "New Text Element" : value === "freeform" ? "" : "",
+                    content: value === "text" ? "New Text Element" : value === "freeform" ? "" : "image_placeholder",
                     properties:
                       value === "container"
                         ? defaultContainerProperties
@@ -282,7 +281,7 @@ export default function SlideDesigner({
                   <SelectItem value="image">
                     <div className="flex items-center gap-2">
                       <Image className="w-4 h-4" />
-                      <span>Image</span>
+                      <span>Image Placeholder</span>
                     </div>
                   </SelectItem>
                 </SelectContent>
@@ -333,14 +332,9 @@ export default function SlideDesigner({
 
             {newElement.elementType === "image" && (
               <div className="col-span-2">
-                <Label>Image</Label>
-                <Button
-                  variant="outline"
-                  onClick={() => setImageSelector({ open: true, type: "element" })}
-                  className="w-full"
-                >
-                  {newElement.content ? "Change Image" : "Select Image"}
-                </Button>
+                <p className="text-sm text-muted-foreground">
+                  This will create an image placeholder that users can click to select an image when creating their profile.
+                </p>
               </div>
             )}
 
@@ -415,86 +409,8 @@ export default function SlideDesigner({
               </div>
             </div>
 
-            {newElement.elementType === "text" && (
-              <div className="col-span-3 grid grid-cols-3 gap-4">
-                <div>
-                  <Label>Font Size</Label>
-                  <Input
-                    type="text"
-                    value={newElement.properties?.fontSize}
-                    onChange={(e) =>
-                      setNewElement({
-                        ...newElement,
-                        properties: {
-                          ...defaultTextProperties,
-                          ...newElement.properties,
-                          fontSize: e.target.value,
-                        },
-                      })
-                    }
-                    placeholder="16px"
-                  />
-                </div>
-                <div>
-                  <Label>Text Color</Label>
-                  <Input
-                    type="color"
-                    value={newElement.properties?.color}
-                    onChange={(e) =>
-                      setNewElement({
-                        ...newElement,
-                        properties: {
-                          ...defaultTextProperties,
-                          ...newElement.properties,
-                          color: e.target.value,
-                        },
-                      })
-                    }
-                  />
-                </div>
-                <div>
-                  <Label>Background</Label>
-                  <Input
-                    type="color"
-                    value={newElement.properties?.backgroundColor === "transparent"
-                      ? "#ffffff"
-                      : newElement.properties?.backgroundColor}
-                    onChange={(e) =>
-                      setNewElement({
-                        ...newElement,
-                        properties: {
-                          ...defaultTextProperties,
-                          ...newElement.properties,
-                          backgroundColor: e.target.value,
-                        },
-                      })
-                    }
-                  />
-                </div>
-              </div>
-            )}
-
             {(newElement.elementType === "container" || newElement.elementType === "image") && (
               <div className="col-span-3 grid grid-cols-3 gap-4">
-                {newElement.elementType === "container" && (
-                  <div>
-                    <Label>Background Color</Label>
-                    <Input
-                      type="color"
-                      value={newElement.properties?.backgroundColor ?? "#f1f5f9"}
-                      onChange={(e) =>
-                        setNewElement({
-                          ...newElement,
-                          properties: {
-                            ...defaultContainerProperties,
-                            ...newElement.properties,
-                            backgroundColor: e.target.value,
-                          },
-                        })
-                      }
-                    />
-                  </div>
-                )}
                 <div>
                   <Label>Border Radius</Label>
                   <Input
@@ -513,26 +429,6 @@ export default function SlideDesigner({
                     placeholder="8px"
                   />
                 </div>
-                {newElement.elementType === "container" && (
-                  <div>
-                    <Label>Padding</Label>
-                    <Input
-                      type="text"
-                      value={newElement.properties?.padding ?? "16px"}
-                      onChange={(e) =>
-                        setNewElement({
-                          ...newElement,
-                          properties: {
-                            ...defaultContainerProperties,
-                            ...newElement.properties,
-                            padding: e.target.value,
-                          },
-                        })
-                      }
-                      placeholder="16px"
-                    />
-                  </div>
-                )}
               </div>
             )}
           </div>
@@ -612,12 +508,9 @@ export default function SlideDesigner({
               onClick={() => setSelectedElement(element)}
             >
               {element.elementType === "image" ? (
-                <img
-                  src={element.content}
-                  alt="Element"
-                  className="w-full h-full object-cover"
-                  style={{ borderRadius: element.properties.borderRadius }}
-                />
+                <div className="w-full h-full bg-muted flex items-center justify-center">
+                  <Image className="w-8 h-8 text-muted-foreground" />
+                </div>
               ) : (
                 element.content
               )}
