@@ -68,14 +68,6 @@ interface SlideDesignerProps {
   onUpdateBackground: (url: string) => void;
 }
 
-const generateElementName = (elementType: string): string => {
-  // Generate a more readable name for text elements
-  let baseName = "Custom Text";
-  let counter = 1;
-
-  // Todo: In future we'll store this in DB to persist naming across sessions
-  return `${baseName} ${counter}`;
-};
 
 export default function SlideDesigner({
   themeId,
@@ -180,6 +172,11 @@ export default function SlideDesigner({
   const handleAddElement = () => {
     if (!themeId) return;
 
+    // For text elements, find the selected field info
+    const selectedField = newElement.elementType === "text" 
+      ? PROFILE_FIELDS.find(field => field.placeholder === newElement.content)
+      : null;
+
     const elementData = {
       ...newElement,
       themeId,
@@ -191,10 +188,10 @@ export default function SlideDesigner({
           ? defaultImageProperties
           : {
               ...defaultTextProperties,
-              // Add a descriptive name property for text elements
-              name: newElement.elementType === "text"
-                ? generateElementName("text")  // Use descriptive name generator
-                : undefined
+              // Use the field ID as the name property for text elements
+              name: selectedField?.id || 'customText',
+              // Store the display label for the form
+              label: selectedField?.label || 'Custom Text'
             },
     };
 
