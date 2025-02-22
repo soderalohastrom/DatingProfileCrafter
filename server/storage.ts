@@ -19,6 +19,7 @@ export interface IStorage {
   getTheme(id: number): Promise<Theme | undefined>;
   createTheme(theme: InsertTheme): Promise<Theme>;
   updateTheme(id: number, theme: Partial<InsertTheme>): Promise<Theme>;
+  deleteTheme(id: number): Promise<void>;
 
   // Slide Element Management
   getSlideElements(themeId: number, slideNumber: number): Promise<SlideElement[]>;
@@ -102,6 +103,18 @@ export class DatabaseStorage implements IStorage {
     }
 
     return theme;
+  }
+
+  async deleteTheme(id: number): Promise<void> {
+    // First delete all associated slide elements
+    await db
+      .delete(slideElements)
+      .where(eq(slideElements.themeId, id));
+
+    // Then delete the theme
+    await db
+      .delete(templateThemes)
+      .where(eq(templateThemes.id, id));
   }
 
   // Slide Element Management

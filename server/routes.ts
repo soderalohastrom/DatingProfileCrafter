@@ -80,6 +80,15 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  app.delete("/api/admin/themes/:id", async (req, res) => {
+    try {
+      await storage.deleteTheme(parseInt(req.params.id));
+      res.sendStatus(204);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete theme" });
+    }
+  });
+
   // Slide element routes
   app.get("/api/admin/themes/:themeId/slides/:slideNumber/elements", async (req, res) => {
     try {
