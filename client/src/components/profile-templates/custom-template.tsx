@@ -9,9 +9,11 @@ interface CustomTemplateProps {
   onUpdateMatchmakerTake?: (text: string) => void;
 }
 
+// Mapping function for profile field placeholders
 function mapProfileToContent(content: string | null, profile: Partial<Profile>): string {
   if (!content) return '';
 
+  // Define mappings between placeholders and profile fields
   const mappings: Record<string, string | number | undefined> = {
     '{firstName}': profile.firstName,
     '{age}': profile.age,
@@ -20,10 +22,12 @@ function mapProfileToContent(content: string | null, profile: Partial<Profile>):
     '{education}': profile.education,
     '{interests}': profile.interests,
     '{bio}': profile.bio,
+    // Add any additional field mappings here
   };
 
+  // Replace all placeholders with actual values
   return Object.entries(mappings).reduce(
-    (text, [key, value]) => text.replace(key, String(value || '')),
+    (text, [placeholder, value]) => text.replace(placeholder, String(value || '')),
     content
   );
 }
@@ -80,8 +84,12 @@ export default function CustomTemplate({
                   className="w-full h-full object-cover"
                   style={{ borderRadius: element.properties.borderRadius }}
                 />
-              ) : (
+              ) : element.elementType === "text" ? (
+                // Handle text elements with placeholder mapping
                 mapProfileToContent(element.content, profile)
+              ) : (
+                // Handle freeform text elements directly
+                element.content
               )}
             </div>
           ))}
