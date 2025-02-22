@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/select";
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Image, Type, Square, Grid } from "lucide-react";
+import { Plus, Image, Type, Square, Grid, Trash2 } from "lucide-react";
 import type { SlideElement, InsertSlideElement } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 import DraggableElement from "../draggable-element";
@@ -135,6 +135,32 @@ export default function SlideDesigner({
     },
   });
 
+  // Delete element
+  const deleteElementMutation = useMutation({
+    mutationFn: async (id: number) => {
+      await apiRequest(
+        "DELETE",
+        `/api/admin/themes/${themeId}/slides/${slideNumber}/elements/${id}`
+      );
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [`/api/admin/themes/${themeId}/slides/${slideNumber}/elements`],
+      });
+      toast({
+        title: "Success",
+        description: "Element deleted successfully",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleAddElement = () => {
     if (!themeId) return;
 
@@ -179,6 +205,13 @@ export default function SlideDesigner({
       });
     }
     setImageSelector({ open: false, type: null });
+  };
+
+  const handleDeleteElement = (e: React.MouseEvent, element: SlideElement) => {
+    e.stopPropagation(); // Prevent element selection
+    if (confirm(`Are you sure you want to delete this element?`)) {
+      deleteElementMutation.mutate(element.id);
+    }
   };
 
   return (
@@ -493,7 +526,7 @@ export default function SlideDesigner({
         style={{
           transform: "scale(0.4)",
           transformOrigin: "top left",
-          marginBottom: '-35%',
+          marginBottom: "-35%",
           backgroundImage: backgroundImage ? `url(${backgroundImage})` : undefined,
           backgroundSize: "cover",
           backgroundPosition: "center",
@@ -508,8 +541,8 @@ export default function SlideDesigner({
                 linear-gradient(to right, rgba(0,0,0,0.1) 1px, transparent 1px),
                 linear-gradient(to bottom, rgba(0,0,0,0.1) 1px, transparent 1px)
               `,
-              backgroundSize: '50px 50px',
-              pointerEvents: 'none',
+              backgroundSize: "50px 50px",
+              pointerEvents: "none",
             }}
           />
         )}
@@ -520,12 +553,12 @@ export default function SlideDesigner({
             key={element.id}
             defaultPosition={{ x: element.position.x, y: element.position.y }}
             onPositionChange={(pos) => handlePositionChange(element, pos)}
-            className={`absolute ${
-              selectedElement?.id === element.id ? 'ring-2 ring-primary' : ''
+            className={`absolute group ${
+              selectedElement?.id === element.id ? "ring-2 ring-primary" : ""
             }`}
           >
             <div
-              className="w-full h-full"
+              className="w-full h-full relative"
               style={{
                 width: element.position.width,
                 height: element.position.height,
@@ -544,6 +577,14 @@ export default function SlideDesigner({
               ) : (
                 element.content
               )}
+              <Button
+                variant="destructive"
+                size="icon"
+                className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                onClick={(e) => handleDeleteElement(e, element)}
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
             </div>
           </DraggableElement>
         ))}
