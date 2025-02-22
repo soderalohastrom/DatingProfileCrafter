@@ -60,8 +60,8 @@ export default function SlideDesigner({
   const queryClient = useQueryClient();
 
   // Fetch slide elements
-  const { data: elements = [], isLoading } = useQuery<SlideElement[]>({
-    queryKey: ["/api/admin/slide-elements", themeId, slideNumber],
+  const { data: elements = [] } = useQuery<SlideElement[]>({
+    queryKey: [`/api/admin/themes/${themeId}/slides/${slideNumber}/elements`],
     enabled: !!themeId,
   });
 
@@ -77,7 +77,7 @@ export default function SlideDesigner({
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["/api/admin/slide-elements", themeId, slideNumber],
+        queryKey: [`/api/admin/themes/${themeId}/slides/${slideNumber}/elements`],
       });
       toast({
         title: "Success",
@@ -110,7 +110,7 @@ export default function SlideDesigner({
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["/api/admin/slide-elements", themeId, slideNumber],
+        queryKey: [`/api/admin/themes/${themeId}/slides/${slideNumber}/elements`],
       });
     },
   });
@@ -142,9 +142,9 @@ export default function SlideDesigner({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="flex flex-col gap-4">
       {/* Background and Grid Controls */}
-      <div className="flex items-center gap-4 mb-4">
+      <div className="flex items-center gap-4">
         <Button
           variant="outline"
           onClick={() => setImageSelector(true)}
@@ -165,7 +165,7 @@ export default function SlideDesigner({
 
       {/* Slide Preview */}
       <Card
-        className="w-[1920px] h-[1080px] relative"
+        className="w-[1920px] h-[1080px] relative bg-white"
         style={{
           transform: "scale(0.4)",
           transformOrigin: "top left",
