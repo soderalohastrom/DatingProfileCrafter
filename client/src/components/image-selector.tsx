@@ -7,42 +7,41 @@ import {
 import { Button } from "@/components/ui/button";
 import { Image, Upload } from "lucide-react";
 import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+
+interface ImageData {
+  url: string;
+  thumbnailUrl: string;
+  type: 'profile' | 'background';
+}
 
 interface ImageSelectorProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSelect: (url: string) => void;
-  directory?: string;
+  type?: 'profile' | 'background';
 }
 
 export default function ImageSelector({ 
   open, 
   onOpenChange, 
   onSelect,
-  directory 
+  type = 'profile'
 }: ImageSelectorProps) {
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
-  const [images, setImages] = useState<string[]>([]);
 
-  useEffect(() => {
-    if (directory) {
-      // Load images from the specified directory
-      const images = directory === "/backgrounds" 
-        ? [
-            "/assets/backgrounds/classic/background_logo.png",
-            "/assets/backgrounds/classic/background_blank.png",
-            // Add more background images here
-          ]
-        : [
-            "/assets/sample-images/headshots/sample1.jpg",
-            "/assets/sample-images/headshots/sample2.jpg",
-            "/assets/sample-images/lifestyle/sample1.jpg",
-            "/assets/sample-images/formal/sample1.jpg",
-          ];
-      setImages(images);
+  // Fetch images from the server
+  const { data: images = [], refetch } = useQuery<ImageData[]>({
+    queryKey: ['images', type],
+    queryFn: async () => {
+      const response = await fetch(`/api/upload?type=${type}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch images');
+      }
+      return response.json();
     }
-  }, [directory]);
+  });
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -54,6 +53,7 @@ export default function ImageSelector({
 
     const formData = new FormData();
     formData.append("image", file);
+    formData.append("type", type);
 
     try {
       const response = await fetch("/api/upload", {
@@ -68,6 +68,7 @@ export default function ImageSelector({
       const data = await response.json();
       onSelect(data.url);
       onOpenChange(false);
+      refetch(); // Refresh the image list
     } catch (error) {
       setUploadError("Failed to upload image. Please try again.");
     } finally {
@@ -80,7 +81,7 @@ export default function ImageSelector({
       <DialogContent className="sm:max-w-[800px]">
         <DialogHeader>
           <DialogTitle>
-            {directory === "/backgrounds" ? "Select Background Image" : "Select Image"}
+            {type === "background" ? "Select Background Image" : "Select Profile Image"}
           </DialogTitle>
         </DialogHeader>
 
@@ -109,18 +110,18 @@ export default function ImageSelector({
         </div>
 
         {/* Image Grid */}
-        <div className="grid grid-cols-3 gap-4 p-4">
-          {images.map((url, index) => (
+        <div className="grid grid-cols-3 gap-4 p-4 max-h-[400px] overflow-y-auto">
+          {images.map((image, index) => (
             <div
               key={index}
               className="relative aspect-square rounded-lg overflow-hidden group cursor-pointer hover:ring-2 hover:ring-primary"
               onClick={() => {
-                onSelect(url);
+                onSelect(image.url);
                 onOpenChange(false);
               }}
             >
               <img
-                src={url}
+                src={image.thumbnailUrl}
                 alt={`Image ${index + 1}`}
                 className="w-full h-full object-cover"
               />
