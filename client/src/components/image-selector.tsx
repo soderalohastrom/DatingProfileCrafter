@@ -6,25 +6,43 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Image, Upload } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface ImageSelectorProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSelect: (url: string) => void;
+  directory?: string;
 }
 
-// Sample images - will be replaced with database/uploaded images later
-const sampleImages = [
-  "/assets/sample-images/headshots/sample1.jpg",
-  "/assets/sample-images/headshots/sample2.jpg",
-  "/assets/sample-images/lifestyle/sample1.jpg",
-  "/assets/sample-images/formal/sample1.jpg",
-];
-
-export default function ImageSelector({ open, onOpenChange, onSelect }: ImageSelectorProps) {
+export default function ImageSelector({ 
+  open, 
+  onOpenChange, 
+  onSelect,
+  directory 
+}: ImageSelectorProps) {
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [images, setImages] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (directory) {
+      // Load images from the specified directory
+      const images = directory === "/backgrounds" 
+        ? [
+            "/assets/backgrounds/classic/background_logo.png",
+            "/assets/backgrounds/classic/background_blank.png",
+            // Add more background images here
+          ]
+        : [
+            "/assets/sample-images/headshots/sample1.jpg",
+            "/assets/sample-images/headshots/sample2.jpg",
+            "/assets/sample-images/lifestyle/sample1.jpg",
+            "/assets/sample-images/formal/sample1.jpg",
+          ];
+      setImages(images);
+    }
+  }, [directory]);
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -61,7 +79,9 @@ export default function ImageSelector({ open, onOpenChange, onSelect }: ImageSel
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[800px]">
         <DialogHeader>
-          <DialogTitle>Select Profile Image</DialogTitle>
+          <DialogTitle>
+            {directory === "/backgrounds" ? "Select Background Image" : "Select Image"}
+          </DialogTitle>
         </DialogHeader>
 
         {/* Upload Section */}
@@ -90,7 +110,7 @@ export default function ImageSelector({ open, onOpenChange, onSelect }: ImageSel
 
         {/* Image Grid */}
         <div className="grid grid-cols-3 gap-4 p-4">
-          {sampleImages.map((url, index) => (
+          {images.map((url, index) => (
             <div
               key={index}
               className="relative aspect-square rounded-lg overflow-hidden group cursor-pointer hover:ring-2 hover:ring-primary"
@@ -101,7 +121,7 @@ export default function ImageSelector({ open, onOpenChange, onSelect }: ImageSel
             >
               <img
                 src={url}
-                alt={`Profile image ${index + 1}`}
+                alt={`Image ${index + 1}`}
                 className="w-full h-full object-cover"
               />
               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">

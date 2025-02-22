@@ -1,4 +1,9 @@
-import { useState, useEffect } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus, Image, Type, Square, Grid } from "lucide-react";
 import type { SlideElement, InsertSlideElement } from "@shared/schema";
@@ -46,6 +52,11 @@ const defaultContainerProperties = {
   padding: "16px",
 };
 
+const defaultImageProperties = {
+  objectFit: "cover",
+  borderRadius: "0px",
+};
+
 export default function SlideDesigner({
   themeId,
   slideNumber,
@@ -53,7 +64,10 @@ export default function SlideDesigner({
   onUpdateBackground,
 }: SlideDesignerProps) {
   const [selectedElement, setSelectedElement] = useState<SlideElement | null>(null);
-  const [imageSelector, setImageSelector] = useState(false);
+  const [imageSelector, setImageSelector] = useState<{
+    open: boolean;
+    type: "background" | "element" | null;
+  }>({ open: false, type: null });
   const [showGrid, setShowGrid] = useState(true);
   const [newElement, setNewElement] = useState<Partial<InsertSlideElement>>({
     elementType: "text",
@@ -131,6 +145,8 @@ export default function SlideDesigner({
       properties: 
         newElement.elementType === "container" 
           ? defaultContainerProperties 
+          : newElement.elementType === "image"
+          ? defaultImageProperties
           : defaultTextProperties,
     };
 
@@ -153,13 +169,25 @@ export default function SlideDesigner({
     });
   };
 
+  const handleImageSelect = (url: string) => {
+    if (imageSelector.type === "background") {
+      onUpdateBackground(url);
+    } else if (imageSelector.type === "element") {
+      setNewElement({
+        ...newElement,
+        content: url,
+      });
+    }
+    setImageSelector({ open: false, type: null });
+  };
+
   return (
     <div className="flex flex-col gap-4">
       {/* Background and Grid Controls */}
       <div className="flex items-center gap-4">
         <Button
           variant="outline"
-          onClick={() => setImageSelector(true)}
+          onClick={() => setImageSelector({ open: true, type: "background" })}
           className="flex items-center gap-2"
         >
           <Image className="w-4 h-4" />
@@ -221,7 +249,16 @@ export default function SlideDesigner({
               }}
               onClick={() => setSelectedElement(element)}
             >
-              {element.content}
+              {element.elementType === "image" ? (
+                <img 
+                  src={element.content} 
+                  alt="Element" 
+                  className="w-full h-full object-cover"
+                  style={{ borderRadius: element.properties.borderRadius }}
+                />
+              ) : (
+                element.content
+              )}
             </div>
           </DraggableElement>
         ))}
@@ -241,7 +278,12 @@ export default function SlideDesigner({
                     ...newElement,
                     elementType: value,
                     content: value === "text" ? "New Text Element" : "",
-                    properties: value === "container" ? defaultContainerProperties : defaultTextProperties,
+                    properties: 
+                      value === "container" 
+                        ? defaultContainerProperties 
+                        : value === "image"
+                        ? defaultImageProperties
+                        : defaultTextProperties,
                   })
                 }
               >
@@ -261,6 +303,12 @@ export default function SlideDesigner({
                       <span>Container</span>
                     </div>
                   </SelectItem>
+                  <SelectItem value="image">
+                    <div className="flex items-center gap-2">
+                      <Image className="w-4 h-4" />
+                      <span>Image</span>
+                    </div>
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -278,6 +326,19 @@ export default function SlideDesigner({
                   }
                   placeholder="Enter text content"
                 />
+              </div>
+            )}
+
+            {newElement.elementType === "image" && (
+              <div className="col-span-2">
+                <Label>Image</Label>
+                <Button
+                  variant="outline"
+                  onClick={() => setImageSelector({ open: true, type: "element" })}
+                  className="w-full"
+                >
+                  {newElement.content ? "Change Image" : "Select Image"}
+                </Button>
               </div>
             )}
 
@@ -413,25 +474,27 @@ export default function SlideDesigner({
               </div>
             )}
 
-            {newElement.elementType === "container" && (
+            {(newElement.elementType === "container" || newElement.elementType === "image") && (
               <div className="col-span-3 grid grid-cols-3 gap-4">
-                <div>
-                  <Label>Background Color</Label>
-                  <Input
-                    type="color"
-                    value={newElement.properties?.backgroundColor ?? "#f1f5f9"}
-                    onChange={(e) =>
-                      setNewElement({
-                        ...newElement,
-                        properties: {
-                          ...defaultContainerProperties,
-                          ...newElement.properties,
-                          backgroundColor: e.target.value,
-                        },
-                      })
-                    }
-                  />
-                </div>
+                {newElement.elementType === "container" && (
+                  <div>
+                    <Label>Background Color</Label>
+                    <Input
+                      type="color"
+                      value={newElement.properties?.backgroundColor ?? "#f1f5f9"}
+                      onChange={(e) =>
+                        setNewElement({
+                          ...newElement,
+                          properties: {
+                            ...defaultContainerProperties,
+                            ...newElement.properties,
+                            backgroundColor: e.target.value,
+                          },
+                        })
+                      }
+                    />
+                  </div>
+                )}
                 <div>
                   <Label>Border Radius</Label>
                   <Input
@@ -441,7 +504,7 @@ export default function SlideDesigner({
                       setNewElement({
                         ...newElement,
                         properties: {
-                          ...defaultContainerProperties,
+                          ...(newElement.elementType === "container" ? defaultContainerProperties : defaultImageProperties),
                           ...newElement.properties,
                           borderRadius: e.target.value,
                         },
@@ -450,24 +513,26 @@ export default function SlideDesigner({
                     placeholder="8px"
                   />
                 </div>
-                <div>
-                  <Label>Padding</Label>
-                  <Input
-                    type="text"
-                    value={newElement.properties?.padding ?? "16px"}
-                    onChange={(e) =>
-                      setNewElement({
-                        ...newElement,
-                        properties: {
-                          ...defaultContainerProperties,
-                          ...newElement.properties,
-                          padding: e.target.value,
-                        },
-                      })
-                    }
-                    placeholder="16px"
-                  />
-                </div>
+                {newElement.elementType === "container" && (
+                  <div>
+                    <Label>Padding</Label>
+                    <Input
+                      type="text"
+                      value={newElement.properties?.padding ?? "16px"}
+                      onChange={(e) =>
+                        setNewElement({
+                          ...newElement,
+                          properties: {
+                            ...defaultContainerProperties,
+                            ...newElement.properties,
+                            padding: e.target.value,
+                          },
+                        })
+                      }
+                      placeholder="16px"
+                    />
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -484,12 +549,10 @@ export default function SlideDesigner({
       </Card>
 
       <ImageSelector
-        open={imageSelector}
-        onOpenChange={setImageSelector}
-        onSelect={(url) => {
-          onUpdateBackground(url);
-          setImageSelector(false);
-        }}
+        open={imageSelector.open}
+        onOpenChange={(open) => setImageSelector({ open, type: imageSelector.type })}
+        onSelect={handleImageSelect}
+        directory={imageSelector.type === "background" ? "/backgrounds" : undefined}
       />
     </div>
   );
