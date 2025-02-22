@@ -10,8 +10,13 @@ interface CustomTemplateProps {
 }
 
 // Mapping function for profile field placeholders
-function mapProfileToContent(content: string | null, profile: Partial<Profile>): string {
+function mapProfileToContent(content: string | null, profile: Partial<Profile>, elementName?: string): string {
   if (!content) return '';
+
+  // If this is a named element, use its value from the profile
+  if (elementName && profile[elementName as keyof Profile] !== undefined) {
+    return String(profile[elementName as keyof Profile]);
+  }
 
   // Define mappings between placeholders and profile fields
   const mappings: Record<string, string | number | undefined> = {
@@ -22,7 +27,6 @@ function mapProfileToContent(content: string | null, profile: Partial<Profile>):
     '{education}': profile.education,
     '{interests}': profile.interests,
     '{bio}': profile.bio,
-    // Add any additional field mappings here
   };
 
   // Replace all placeholders with actual values
@@ -85,8 +89,8 @@ export default function CustomTemplate({
                   style={{ borderRadius: element.properties.borderRadius }}
                 />
               ) : element.elementType === "text" ? (
-                // Handle text elements with placeholder mapping
-                mapProfileToContent(element.content, profile)
+                // Handle text elements with properties.name for custom fields
+                mapProfileToContent(element.content, profile, element.properties.name)
               ) : (
                 // Handle freeform text elements directly
                 element.content

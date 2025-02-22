@@ -10,10 +10,11 @@ A dynamic web application for creating and managing dating profiles with multipl
   - Modern: Contemporary design with gradient accents
   - Classic: Traditional elegant layout
   - Minimal: Clean, minimalist design
+  - Custom: User-created templates with dynamic elements
 - Profile data synchronization between form and preview
 - URL parameter-based profile loading (`?profile_id={id}`)
 
-### Templates
+### Template System
 Each template includes a consistent 3-slide layout:
 - **Slide 1: Main Profile**
   - Primary profile information
@@ -25,6 +26,16 @@ Each template includes a consistent 3-slide layout:
 - **Slide 3: Matchmaker's Take**
   - Full-height profile image
   - Customizable matchmaker observations
+
+### Custom Template Features
+- Visual template designer with drag-and-drop elements
+- Support for text, image, and container elements
+- Dynamic form field generation based on template elements
+- Real-time preview of template changes
+- Template-specific form fields:
+  - Built-in templates show standard profile fields
+  - Custom templates show only fields created in designer
+  - Automatic text element binding between form and preview
 
 ### Image Management
 - Image selector modal for profile photos
@@ -38,26 +49,27 @@ Each template includes a consistent 3-slide layout:
 - Export to multi-page PDF
 - Maintains slide/page structure in exports
 
-## Planned Features
+## Next Steps
 
-### Database Integration
-- MySQL database integration planned
-- Profile data will be stored in database tables
-- URL parameter (`?profile_id={6digit#}`) will:
-  1. Load profile data from database
-  2. Auto-populate form fields
-  3. Create new database entry if profile_id doesn't exist
-  4. Support profile updates via "Save Profile"
+### Template Field Mapping Enhancement
+1. **Form-Designer Synchronization**
+   - Ensure number of form fields matches created text elements
+   - Implement one-to-one mapping between designer elements and form inputs
+   - Update form fields dynamically when adding/removing elements
 
-### Extended Image Support
-- Image storage in MySQL database
-- Thumbnail generation and management
-- Multiple image support per profile
-- Image categorization and ordering
+2. **Database Integration (Planned)**
+   - Store element mapping configurations
+   - Persist custom template layouts
+   - Save form field associations
 
-## Technical Implementation
+3. **Element Naming System**
+   - Implement unique identifiers for custom fields
+   - Create consistent naming convention for dynamic elements
+   - Support template versioning
 
-### Profile Loading Process
+### Technical Implementation Notes
+
+#### Profile Loading Process
 1. URL Parameter Detection:
    ```typescript
    // Example URL: /profile-maker?profile_id=123456
@@ -71,56 +83,13 @@ Each template includes a consistent 3-slide layout:
    - Template updates in real-time
    - Changes sync between form and preview
 
-### Template System
-- Each template is a separate component
-- Unified interface for all templates
-- Consistent 3-slide structure
-- Common image selection system
-- Standardized 16:9 aspect ratio
-
-### Export System
-- Uses html2canvas for PNG generation
-- jsPDF for PDF creation
-- Handles multi-page documents
-- Maintains aspect ratios and quality
-
-## Future Development Notes
-
-### Database Schema (Planned)
-```sql
-CREATE TABLE profiles (
-  id SERIAL PRIMARY KEY,
-  first_name TEXT NOT NULL,
-  age INTEGER NOT NULL,
-  location TEXT NOT NULL,
-  occupation TEXT NOT NULL,
-  education TEXT NOT NULL,
-  interests TEXT NOT NULL,
-  bio TEXT NOT NULL,
-  photo_url TEXT NOT NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-```
-
-### Integration Points
-1. Profile Loading:
-   - API endpoint for profile retrieval
-   - Automatic form population
-   - Template synchronization
-
-2. Image Management:
-   - Image upload and storage
-   - Thumbnail generation
-   - Gallery management
-
-3. Profile Updates:
-   - Real-time saves
-   - Version tracking
-   - Change history
+#### Custom Template System
+- Each custom template stored with unique ID
+- Element positions and properties preserved
+- Dynamic form generation based on template elements
+- Real-time synchronization between form and preview
 
 ## Technology Stack
-
 - Frontend: React/TypeScript
 - Styling: Tailwind CSS + shadcn/ui
 - State Management: React Query
@@ -130,10 +99,27 @@ CREATE TABLE profiles (
 
 ## Development Guidelines
 
-1. Always maintain real-time sync between form and preview
-2. Support multiple template styles
-3. Ensure proper error handling for profile loading
-4. Maintain clean separation between UI components
-5. Follow TypeScript best practices
-6. Use proper form validation
-7. Implement responsive design
+1. Template Element Management
+   - Always maintain template element uniqueness
+   - Ensure proper cleanup when removing elements
+   - Validate element names and properties
+
+2. Form Field Synchronization
+   - Match form fields to template elements exactly
+   - Update form structure when template changes
+   - Preserve data when switching templates
+
+3. Code Organization
+   - Keep template logic separate from form handling
+   - Use consistent naming for dynamic elements
+   - Document element-form relationships
+
+4. Testing Requirements
+   - Verify form-template synchronization
+   - Test element addition/removal
+   - Validate data persistence
+
+5. Future Considerations
+   - Plan for template versioning
+   - Consider element reusability
+   - Prepare for multi-user support
