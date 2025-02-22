@@ -11,7 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Image } from "lucide-react";
+import { Plus, Image, Type, Square } from "lucide-react";
 import type { SlideElement, InsertSlideElement } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 import DraggableElement from "../draggable-element";
@@ -24,6 +24,21 @@ interface SlideDesignerProps {
   onUpdateBackground: (url: string) => void;
 }
 
+const defaultPosition = {
+  x: 0,
+  y: 0,
+  width: 200,
+  height: 100,
+};
+
+const defaultProperties = {
+  fontSize: "16px",
+  color: "#000000",
+  backgroundColor: "transparent",
+  padding: "0px",
+  borderRadius: "0px",
+};
+
 export default function SlideDesigner({
   themeId,
   slideNumber,
@@ -34,12 +49,9 @@ export default function SlideDesigner({
   const [imageSelector, setImageSelector] = useState(false);
   const [newElement, setNewElement] = useState<Partial<InsertSlideElement>>({
     elementType: "text",
-    position: { x: 0, y: 0, width: 200, height: 100 },
-    properties: {
-      fontSize: "16px",
-      color: "#000000",
-      backgroundColor: "transparent",
-    },
+    position: defaultPosition,
+    properties: defaultProperties,
+    content: "",
   });
 
   const queryClient = useQueryClient();
@@ -61,6 +73,12 @@ export default function SlideDesigner({
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["/api/admin/slide-elements", themeId, slideNumber],
+      });
+      setNewElement({
+        elementType: "text",
+        position: defaultPosition,
+        properties: defaultProperties,
+        content: "",
       });
     },
   });
@@ -99,7 +117,7 @@ export default function SlideDesigner({
 
   const handlePositionChange = (
     element: SlideElement,
-    position: { x: number; y: number }
+    newPosition: { x: number; y: number }
   ) => {
     updateElementMutation.mutate({
       id: element.id,
@@ -107,8 +125,7 @@ export default function SlideDesigner({
         ...element,
         position: {
           ...element.position,
-          x: position.x,
-          y: position.y,
+          ...newPosition,
         },
       },
     });
@@ -145,14 +162,14 @@ export default function SlideDesigner({
             defaultPosition={{ x: element.position.x, y: element.position.y }}
             onPositionChange={(pos) => handlePositionChange(element, pos)}
             className={`absolute`}
-            style={{
-              width: element.position.width,
-              height: element.position.height,
-              ...element.properties,
-            }}
           >
             <div
               className="w-full h-full"
+              style={{
+                width: element.position.width,
+                height: element.position.height,
+                ...element.properties,
+              }}
               onClick={() => setSelectedElement(element)}
             >
               {element.content}
@@ -165,90 +182,177 @@ export default function SlideDesigner({
       <Card className="p-4">
         <div className="space-y-4">
           <h3 className="text-lg font-semibold">Add New Element</h3>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-3 gap-4">
             <div>
               <Label>Element Type</Label>
               <Select
                 value={newElement.elementType}
                 onValueChange={(value) =>
-                  setNewElement({ ...newElement, elementType: value })
+                  setNewElement({
+                    ...newElement,
+                    elementType: value,
+                    content: value === "text" ? "New Text" : "",
+                  })
                 }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="text">Text</SelectItem>
-                  <SelectItem value="image">Image</SelectItem>
+                  <SelectItem value="text">
+                    <div className="flex items-center gap-2">
+                      <Type className="w-4 h-4" />
+                      <span>Text</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="container">
+                    <div className="flex items-center gap-2">
+                      <Square className="w-4 h-4" />
+                      <span>Container</span>
+                    </div>
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
-            <div>
-              <Label>Position X</Label>
-              <Input
-                type="number"
-                value={newElement.position?.x}
-                onChange={(e) =>
-                  setNewElement({
-                    ...newElement,
-                    position: {
-                      ...newElement.position,
-                      x: parseInt(e.target.value),
-                    },
-                  })
-                }
-              />
+
+            {/* Position Controls */}
+            <div className="col-span-3 grid grid-cols-4 gap-4">
+              <div>
+                <Label>X Position</Label>
+                <Input
+                  type="number"
+                  value={newElement.position?.x ?? 0}
+                  onChange={(e) =>
+                    setNewElement({
+                      ...newElement,
+                      position: {
+                        ...defaultPosition,
+                        ...newElement.position,
+                        x: parseInt(e.target.value) || 0,
+                      },
+                    })
+                  }
+                />
+              </div>
+              <div>
+                <Label>Y Position</Label>
+                <Input
+                  type="number"
+                  value={newElement.position?.y ?? 0}
+                  onChange={(e) =>
+                    setNewElement({
+                      ...newElement,
+                      position: {
+                        ...defaultPosition,
+                        ...newElement.position,
+                        y: parseInt(e.target.value) || 0,
+                      },
+                    })
+                  }
+                />
+              </div>
+              <div>
+                <Label>Width</Label>
+                <Input
+                  type="number"
+                  value={newElement.position?.width ?? 200}
+                  onChange={(e) =>
+                    setNewElement({
+                      ...newElement,
+                      position: {
+                        ...defaultPosition,
+                        ...newElement.position,
+                        width: parseInt(e.target.value) || 200,
+                      },
+                    })
+                  }
+                />
+              </div>
+              <div>
+                <Label>Height</Label>
+                <Input
+                  type="number"
+                  value={newElement.position?.height ?? 100}
+                  onChange={(e) =>
+                    setNewElement({
+                      ...newElement,
+                      position: {
+                        ...defaultPosition,
+                        ...newElement.position,
+                        height: parseInt(e.target.value) || 100,
+                      },
+                    })
+                  }
+                />
+              </div>
             </div>
-            <div>
-              <Label>Position Y</Label>
-              <Input
-                type="number"
-                value={newElement.position?.y}
-                onChange={(e) =>
-                  setNewElement({
-                    ...newElement,
-                    position: {
-                      ...newElement.position,
-                      y: parseInt(e.target.value),
-                    },
-                  })
-                }
-              />
-            </div>
-            <div>
-              <Label>Width</Label>
-              <Input
-                type="number"
-                value={newElement.position?.width}
-                onChange={(e) =>
-                  setNewElement({
-                    ...newElement,
-                    position: {
-                      ...newElement.position,
-                      width: parseInt(e.target.value),
-                    },
-                  })
-                }
-              />
-            </div>
-            <div>
-              <Label>Height</Label>
-              <Input
-                type="number"
-                value={newElement.position?.height}
-                onChange={(e) =>
-                  setNewElement({
-                    ...newElement,
-                    position: {
-                      ...newElement.position,
-                      height: parseInt(e.target.value),
-                    },
-                  })
-                }
-              />
-            </div>
+
+            {/* Properties Controls */}
+            {newElement.elementType === "text" && (
+              <div className="col-span-3 grid grid-cols-3 gap-4">
+                <div>
+                  <Label>Font Size</Label>
+                  <Input
+                    type="text"
+                    value={newElement.properties?.fontSize}
+                    onChange={(e) =>
+                      setNewElement({
+                        ...newElement,
+                        properties: {
+                          ...defaultProperties,
+                          ...newElement.properties,
+                          fontSize: e.target.value,
+                        },
+                      })
+                    }
+                    placeholder="16px"
+                  />
+                </div>
+                <div>
+                  <Label>Text Color</Label>
+                  <Input
+                    type="color"
+                    value={newElement.properties?.color}
+                    onChange={(e) =>
+                      setNewElement({
+                        ...newElement,
+                        properties: {
+                          ...defaultProperties,
+                          ...newElement.properties,
+                          color: e.target.value,
+                        },
+                      })
+                    }
+                  />
+                </div>
+                <div>
+                  <Label>Background</Label>
+                  <Input
+                    type="color"
+                    value={newElement.properties?.backgroundColor === "transparent"
+                      ? "#ffffff"
+                      : newElement.properties?.backgroundColor}
+                    onChange={(e) =>
+                      setNewElement({
+                        ...newElement,
+                        properties: {
+                          ...defaultProperties,
+                          ...newElement.properties,
+                          backgroundColor: e.target.value,
+                        },
+                      })
+                    }
+                  />
+                </div>
+              </div>
+            )}
           </div>
-          <Button onClick={handleAddElement} className="w-full">
+
+          <Button 
+            onClick={handleAddElement} 
+            className="w-full"
+            disabled={elementMutation.isPending}
+          >
             <Plus className="w-4 h-4 mr-2" />
             Add Element
           </Button>
