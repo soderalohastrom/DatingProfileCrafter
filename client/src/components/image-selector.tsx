@@ -6,7 +6,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Image, Upload } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
 interface ImageData {
@@ -19,23 +19,26 @@ interface ImageSelectorProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSelect: (url: string) => void;
-  type?: 'profile' | 'background';
+  directory?: string;
 }
 
 export default function ImageSelector({ 
   open, 
   onOpenChange, 
   onSelect,
-  type = 'profile'
+  directory
 }: ImageSelectorProps) {
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
-  // Fetch images from the server
+  // Fetch images from the server, including directory parameter if provided
   const { data: images = [], refetch } = useQuery<ImageData[]>({
-    queryKey: ['images', type],
+    queryKey: ['images', directory],
     queryFn: async () => {
-      const response = await fetch(`/api/upload?type=${type}`);
+      const params = new URLSearchParams();
+      if (directory) params.append('directory', directory);
+
+      const response = await fetch(`/api/upload?${params.toString()}`);
       if (!response.ok) {
         throw new Error('Failed to fetch images');
       }
@@ -47,13 +50,12 @@ export default function ImageSelector({
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Reset states
     setUploading(true);
     setUploadError(null);
 
     const formData = new FormData();
     formData.append("image", file);
-    formData.append("type", type);
+    if (directory) formData.append("directory", directory);
 
     try {
       const response = await fetch("/api/upload", {
@@ -68,7 +70,7 @@ export default function ImageSelector({
       const data = await response.json();
       onSelect(data.url);
       onOpenChange(false);
-      refetch(); // Refresh the image list
+      refetch();
     } catch (error) {
       setUploadError("Failed to upload image. Please try again.");
     } finally {
@@ -81,7 +83,7 @@ export default function ImageSelector({
       <DialogContent className="sm:max-w-[800px]">
         <DialogHeader>
           <DialogTitle>
-            {type === "background" ? "Select Background Image" : "Select Profile Image"}
+            {directory?.includes('background') ? "Select Background Image" : "Select Profile Image"}
           </DialogTitle>
         </DialogHeader>
 
@@ -121,7 +123,7 @@ export default function ImageSelector({
               }}
             >
               <img
-                src={image.thumbnailUrl}
+                src={image.thumbnailUrl || image.url}
                 alt={`Image ${index + 1}`}
                 className="w-full h-full object-cover"
               />
@@ -133,6 +135,11 @@ export default function ImageSelector({
               </div>
             </div>
           ))}
+          {images.length === 0 && (
+            <div className="col-span-3 text-center py-8 text-muted-foreground">
+              No images found in this directory
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>
