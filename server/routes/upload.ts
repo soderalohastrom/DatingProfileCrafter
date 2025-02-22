@@ -6,12 +6,14 @@ import sharp from "sharp";
 
 const router = Router();
 
-// Ensure upload directories exist
+// Define base directories
 const uploadsDir = path.join(process.cwd(), "uploads");
 const profileImagesDir = path.join(uploadsDir, "profile-images");
 const backgroundsDir = path.join(uploadsDir, "backgrounds");
 const thumbnailsDir = path.join(uploadsDir, "thumbnails");
+const assetsDir = path.join(process.cwd(), "client", "src", "assets");
 
+// Ensure upload directories exist
 [uploadsDir, profileImagesDir, backgroundsDir, thumbnailsDir].forEach(dir => {
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
@@ -21,9 +23,7 @@ const thumbnailsDir = path.join(uploadsDir, "thumbnails");
 // Configure multer for handling file uploads
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    // Determine upload directory based on image type
-    const imageType = req.body.type || 'profile';
-    const targetDir = imageType === 'background' ? backgroundsDir : profileImagesDir;
+    const targetDir = profileImagesDir;
     cb(null, targetDir);
   },
   filename: function (req, file, cb) {
@@ -47,7 +47,7 @@ const upload = multer({
   }
 });
 
-// Create thumbnail for uploaded image
+// Create thumbnail for an image file
 async function createThumbnail(filePath: string, filename: string) {
   const thumbnailPath = path.join(thumbnailsDir, filename);
   await sharp(filePath)
@@ -59,24 +59,36 @@ async function createThumbnail(filePath: string, filename: string) {
   return `/uploads/thumbnails/${filename}`;
 }
 
-// Handle single file upload
+// Get list of images from a directory
+function getImagesFromDirectory(directory: string, urlPrefix: string) {
+  if (!fs.existsSync(directory)) {
+    console.log(`Directory does not exist: ${directory}`);
+    return [];
+  }
+
+  return fs.readdirSync(directory)
+    .filter(file => /\.(jpg|jpeg|png|webp)$/i.test(file))
+    .map(filename => ({
+      url: `${urlPrefix}/${filename}`,
+      thumbnailUrl: `${urlPrefix}/${filename}`, // For assets, use the same URL for now
+      type: directory.includes('backgrounds') ? 'background' : 'profile'
+    }));
+}
+
+// Handle file upload
 router.post("/", upload.single("image"), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: "No file uploaded" });
     }
-    
-    const imageType = req.body.type || 'profile';
-    const baseUrl = imageType === 'background' ? '/uploads/backgrounds' : '/uploads/profile-images';
-    const fileUrl = `${baseUrl}/${req.file.filename}`;
-    
-    // Create thumbnail
+
+    const fileUrl = `/uploads/profile-images/${req.file.filename}`;
     const thumbnailUrl = await createThumbnail(req.file.path, req.file.filename);
-    
+
     res.json({ 
       url: fileUrl,
       thumbnailUrl: thumbnailUrl,
-      type: imageType
+      type: 'profile'
     });
   } catch (error) {
     console.error('Upload error:', error);
@@ -87,21 +99,23 @@ router.post("/", upload.single("image"), async (req, res) => {
 // Get available images
 router.get("/", (req, res) => {
   try {
-    const type = req.query.type as string || 'profile';
-    const targetDir = type === 'background' ? backgroundsDir : profileImagesDir;
-    
-    const files = fs.readdirSync(targetDir)
-      .filter(file => /\.(jpg|jpeg|png|webp)$/i.test(file))
-      .map(filename => {
-        const baseUrl = type === 'background' ? '/uploads/backgrounds' : '/uploads/profile-images';
-        return {
-          url: `${baseUrl}/${filename}`,
-          thumbnailUrl: `/uploads/thumbnails/${filename}`,
-          type
-        };
-      });
-      
-    res.json(files);
+    const directory = req.query.directory as string;
+    console.log('Requested directory:', directory);
+
+    let images = [];
+
+    if (directory?.startsWith('assets/')) {
+      // Handle assets directory
+      const assetPath = path.join(assetsDir, directory.replace('assets/', ''));
+      console.log('Looking in assets directory:', assetPath);
+      images = getImagesFromDirectory(assetPath, `/src/${directory}`);
+    } else {
+      // Handle uploaded images
+      images = getImagesFromDirectory(profileImagesDir, '/uploads/profile-images');
+    }
+
+    console.log('Found images:', images);
+    res.json(images);
   } catch (error) {
     console.error('Error listing images:', error);
     res.status(500).json({ error: "Failed to list images" });

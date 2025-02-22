@@ -638,7 +638,7 @@ export default function SlideDesigner({
         open={imageSelector.open}
         onOpenChange={(open) => setImageSelector({ open, type: imageSelector.type })}
         onSelect={handleImageSelect}
-        directory={imageSelector.type === "background" ? "@/assets/backgrounds/slides" : undefined}
+        directory={imageSelector.type === "background" ? "assets/backgrounds/slides" : undefined}
       />
     </div>
   );
