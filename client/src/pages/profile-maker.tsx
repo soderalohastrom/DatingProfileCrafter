@@ -104,6 +104,10 @@ export default function ProfileMaker() {
     return undefined;
   };
 
+  const isBuiltInTemplate = (template: string): boolean => {
+    return ["modern", "classic", "minimal"].includes(template);
+  };
+
   return (
     <div className="h-screen bg-background">
       <div className="container mx-auto py-6">
@@ -187,6 +191,7 @@ export default function ProfileMaker() {
                 profile={profile}
                 onChange={setProfile}
                 templateId={getThemeId()}
+                isBuiltInTemplate={isBuiltInTemplate(template)}
               />
             </div>
           </ResizablePanel>
