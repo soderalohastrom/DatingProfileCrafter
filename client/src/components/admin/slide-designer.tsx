@@ -15,7 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus, Image, Type, Square, Grid, Trash2, TextQuote } from "lucide-react";
 import type { SlideElement, InsertSlideElement } from "@shared/schema";
@@ -57,9 +57,9 @@ const defaultContainerProperties = {
 };
 
 const defaultImageProperties = {
-  objectFit: "cover",
+  objectFit: "cover" as const,
   borderRadius: "0px",
-  isPlaceholder: true, // Add this flag to identify placeholder images
+  isPlaceholder: true,
 };
 
 interface SlideDesignerProps {
@@ -68,7 +68,6 @@ interface SlideDesignerProps {
   backgroundImage?: string;
   onUpdateBackground: (url: string) => void;
 }
-
 
 export default function SlideDesigner({
   themeId,
@@ -99,6 +98,7 @@ export default function SlideDesigner({
 
   const elementMutation = useMutation({
     mutationFn: async (data: InsertSlideElement) => {
+      if (!themeId) throw new Error("Theme ID is required");
       const res = await apiRequest(
         "POST",
         `/api/admin/themes/${themeId}/slides/${slideNumber}/elements`,
@@ -131,6 +131,7 @@ export default function SlideDesigner({
       id: number;
       data: Partial<InsertSlideElement>;
     }) => {
+      if (!themeId) throw new Error("Theme ID is required");
       const res = await apiRequest(
         "PATCH",
         `/api/admin/themes/${themeId}/slides/${slideNumber}/elements/${id}`,
@@ -147,6 +148,7 @@ export default function SlideDesigner({
 
   const deleteElementMutation = useMutation({
     mutationFn: async (id: number) => {
+      if (!themeId) throw new Error("Theme ID is required");
       await apiRequest(
         "DELETE",
         `/api/admin/themes/${themeId}/slides/${slideNumber}/elements/${id}`
@@ -217,11 +219,6 @@ export default function SlideDesigner({
   const handleImageSelect = (url: string) => {
     if (imageSelector.type === "background") {
       onUpdateBackground(url);
-    } else if (imageSelector.type === "element") {
-      setNewElement({
-        ...newElement,
-        content: url,
-      });
     }
     setImageSelector({ open: false, type: null });
   };
@@ -416,7 +413,7 @@ export default function SlideDesigner({
                   <Label>Border Radius</Label>
                   <Input
                     type="text"
-                    value={newElement.properties?.borderRadius ?? "8px"}
+                    value={newElement.properties?.borderRadius ?? "0px"}
                     onChange={(e) =>
                       setNewElement({
                         ...newElement,

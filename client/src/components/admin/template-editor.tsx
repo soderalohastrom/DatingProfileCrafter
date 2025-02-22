@@ -33,7 +33,11 @@ export default function TemplateEditor({ theme }: TemplateEditorProps) {
       setFormData({
         name: theme.name,
         description: theme.description,
-        backgroundImages: theme.backgroundImages,
+        backgroundImages: theme.backgroundImages ?? {
+          slide1: "",
+          slide2: "",
+          slide3: "",
+        },
         isActive: theme.isActive,
       });
     }
@@ -69,7 +73,16 @@ export default function TemplateEditor({ theme }: TemplateEditorProps) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    mutation.mutate(formData as InsertTheme);
+    // Ensure backgroundImages has all required fields
+    const updatedFormData = {
+      ...formData,
+      backgroundImages: {
+        slide1: formData.backgroundImages?.slide1 || "",
+        slide2: formData.backgroundImages?.slide2 || "",
+        slide3: formData.backgroundImages?.slide3 || "",
+      }
+    };
+    mutation.mutate(updatedFormData as InsertTheme);
   };
 
   return (
@@ -121,7 +134,7 @@ export default function TemplateEditor({ theme }: TemplateEditorProps) {
                 themeId={theme?.id}
                 slideNumber={slideNum}
                 backgroundImage={
-                  formData.backgroundImages?.[`slide${slideNum}` as "slide1"]
+                  formData.backgroundImages?.[`slide${slideNum}` as keyof typeof formData.backgroundImages]
                 }
                 onUpdateBackground={(url) =>
                   setFormData({
