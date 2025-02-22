@@ -11,11 +11,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Image, Type, Square } from "lucide-react";
+import { Plus, Image, Type, Square, Grid } from "lucide-react";
 import type { SlideElement, InsertSlideElement } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 import DraggableElement from "../draggable-element";
 import ImageSelector from "../image-selector";
+import { useToast } from "@/hooks/use-toast";
 
 interface SlideDesignerProps {
   themeId?: number;
@@ -47,20 +48,24 @@ export default function SlideDesigner({
 }: SlideDesignerProps) {
   const [selectedElement, setSelectedElement] = useState<SlideElement | null>(null);
   const [imageSelector, setImageSelector] = useState(false);
+  const [showGrid, setShowGrid] = useState(true);
   const [newElement, setNewElement] = useState<Partial<InsertSlideElement>>({
     elementType: "text",
     position: defaultPosition,
     properties: defaultProperties,
-    content: "",
+    content: "New Text Element",
   });
 
+  const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: elements = [] } = useQuery<SlideElement[]>({
+  // Fetch slide elements
+  const { data: elements = [], isLoading } = useQuery<SlideElement[]>({
     queryKey: ["/api/admin/slide-elements", themeId, slideNumber],
     enabled: !!themeId,
   });
 
+  // Create new element
   const elementMutation = useMutation({
     mutationFn: async (data: InsertSlideElement) => {
       const res = await apiRequest(
@@ -74,15 +79,20 @@ export default function SlideDesigner({
       queryClient.invalidateQueries({
         queryKey: ["/api/admin/slide-elements", themeId, slideNumber],
       });
+      toast({
+        title: "Success",
+        description: "Element added successfully",
+      });
       setNewElement({
         elementType: "text",
         position: defaultPosition,
         properties: defaultProperties,
-        content: "",
+        content: "New Text Element",
       });
     },
   });
 
+  // Update element position
   const updateElementMutation = useMutation({
     mutationFn: async ({
       id,
@@ -133,7 +143,7 @@ export default function SlideDesigner({
 
   return (
     <div className="space-y-4">
-      {/* Background Image Selection */}
+      {/* Background and Grid Controls */}
       <div className="flex items-center gap-4 mb-4">
         <Button
           variant="outline"
@@ -142,6 +152,14 @@ export default function SlideDesigner({
         >
           <Image className="w-4 h-4" />
           {backgroundImage ? "Change Background" : "Set Background"}
+        </Button>
+        <Button
+          variant="outline"
+          onClick={() => setShowGrid(!showGrid)}
+          className="flex items-center gap-2"
+        >
+          <Grid className="w-4 h-4" />
+          {showGrid ? "Hide Grid" : "Show Grid"}
         </Button>
       </div>
 
@@ -156,12 +174,30 @@ export default function SlideDesigner({
           backgroundPosition: "center",
         }}
       >
+        {/* Grid Overlay */}
+        {showGrid && (
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage: `
+                linear-gradient(to right, rgba(0,0,0,0.1) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(0,0,0,0.1) 1px, transparent 1px)
+              `,
+              backgroundSize: '50px 50px',
+              pointerEvents: 'none',
+            }}
+          />
+        )}
+
+        {/* Elements */}
         {elements.map((element) => (
           <DraggableElement
             key={element.id}
             defaultPosition={{ x: element.position.x, y: element.position.y }}
             onPositionChange={(pos) => handlePositionChange(element, pos)}
-            className={`absolute`}
+            className={`absolute ${
+              selectedElement?.id === element.id ? 'ring-2 ring-primary' : ''
+            }`}
           >
             <div
               className="w-full h-full"
@@ -191,7 +227,7 @@ export default function SlideDesigner({
                   setNewElement({
                     ...newElement,
                     elementType: value,
-                    content: value === "text" ? "New Text" : "",
+                    content: value === "text" ? "New Text Element" : "",
                   })
                 }
               >
@@ -214,6 +250,22 @@ export default function SlideDesigner({
                 </SelectContent>
               </Select>
             </div>
+
+            {newElement.elementType === "text" && (
+              <div className="col-span-2">
+                <Label>Content</Label>
+                <Input
+                  value={newElement.content}
+                  onChange={(e) =>
+                    setNewElement({
+                      ...newElement,
+                      content: e.target.value,
+                    })
+                  }
+                  placeholder="Enter text content"
+                />
+              </div>
+            )}
 
             {/* Position Controls */}
             <div className="col-span-3 grid grid-cols-4 gap-4">
