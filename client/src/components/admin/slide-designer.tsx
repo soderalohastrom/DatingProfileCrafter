@@ -173,7 +173,7 @@ export default function SlideDesigner({
     if (!themeId) return;
 
     // For text elements, find the selected field info
-    const selectedField = newElement.elementType === "text" 
+    const selectedField = newElement.elementType === "text"
       ? PROFILE_FIELDS.find(field => field.placeholder === newElement.content)
       : null;
 
@@ -185,8 +185,8 @@ export default function SlideDesigner({
         newElement.elementType === "container"
           ? defaultContainerProperties
           : newElement.elementType === "image"
-          ? defaultImageProperties
-          : {
+            ? defaultImageProperties
+            : {
               ...defaultTextProperties,
               // Use the field ID as the name property for text elements
               name: selectedField?.id || 'customText',
@@ -252,8 +252,8 @@ export default function SlideDesigner({
                       value === "container"
                         ? defaultContainerProperties
                         : value === "image"
-                        ? defaultImageProperties
-                        : defaultTextProperties,
+                          ? defaultImageProperties
+                          : defaultTextProperties,
                   })
                 }
               >
@@ -638,7 +638,7 @@ export default function SlideDesigner({
         open={imageSelector.open}
         onOpenChange={(open) => setImageSelector({ open, type: imageSelector.type })}
         onSelect={handleImageSelect}
-        directory={imageSelector.type === "background" ? "/backgrounds" : undefined}
+        directory={imageSelector.type === "background" ? "/backgrounds/slides" : undefined}
       />
     </div>
   );
