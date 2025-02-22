@@ -32,12 +32,18 @@ const defaultPosition = {
   height: 100,
 };
 
-const defaultProperties = {
+const defaultTextProperties = {
   fontSize: "16px",
   color: "#000000",
   backgroundColor: "transparent",
   padding: "0px",
   borderRadius: "0px",
+};
+
+const defaultContainerProperties = {
+  backgroundColor: "#f1f5f9",
+  borderRadius: "8px",
+  padding: "16px",
 };
 
 export default function SlideDesigner({
@@ -52,7 +58,7 @@ export default function SlideDesigner({
   const [newElement, setNewElement] = useState<Partial<InsertSlideElement>>({
     elementType: "text",
     position: defaultPosition,
-    properties: defaultProperties,
+    properties: defaultTextProperties,
     content: "New Text Element",
   });
 
@@ -86,7 +92,7 @@ export default function SlideDesigner({
       setNewElement({
         elementType: "text",
         position: defaultPosition,
-        properties: defaultProperties,
+        properties: defaultTextProperties,
         content: "New Text Element",
       });
     },
@@ -118,11 +124,17 @@ export default function SlideDesigner({
   const handleAddElement = () => {
     if (!themeId) return;
 
-    elementMutation.mutate({
+    const elementData = {
       ...newElement,
       themeId,
       slideNumber,
-    } as InsertSlideElement);
+      properties: 
+        newElement.elementType === "container" 
+          ? defaultContainerProperties 
+          : defaultTextProperties,
+    };
+
+    elementMutation.mutate(elementData as InsertSlideElement);
   };
 
   const handlePositionChange = (
@@ -205,6 +217,7 @@ export default function SlideDesigner({
                 width: element.position.width,
                 height: element.position.height,
                 ...element.properties,
+                border: element.elementType === "container" ? "2px dashed #e2e8f0" : undefined,
               }}
               onClick={() => setSelectedElement(element)}
             >
@@ -228,6 +241,7 @@ export default function SlideDesigner({
                     ...newElement,
                     elementType: value,
                     content: value === "text" ? "New Text Element" : "",
+                    properties: value === "container" ? defaultContainerProperties : defaultTextProperties,
                   })
                 }
               >
@@ -351,7 +365,7 @@ export default function SlideDesigner({
                       setNewElement({
                         ...newElement,
                         properties: {
-                          ...defaultProperties,
+                          ...defaultTextProperties,
                           ...newElement.properties,
                           fontSize: e.target.value,
                         },
@@ -369,7 +383,7 @@ export default function SlideDesigner({
                       setNewElement({
                         ...newElement,
                         properties: {
-                          ...defaultProperties,
+                          ...defaultTextProperties,
                           ...newElement.properties,
                           color: e.target.value,
                         },
@@ -388,12 +402,70 @@ export default function SlideDesigner({
                       setNewElement({
                         ...newElement,
                         properties: {
-                          ...defaultProperties,
+                          ...defaultTextProperties,
                           ...newElement.properties,
                           backgroundColor: e.target.value,
                         },
                       })
                     }
+                  />
+                </div>
+              </div>
+            )}
+
+            {newElement.elementType === "container" && (
+              <div className="col-span-3 grid grid-cols-3 gap-4">
+                <div>
+                  <Label>Background Color</Label>
+                  <Input
+                    type="color"
+                    value={newElement.properties?.backgroundColor ?? "#f1f5f9"}
+                    onChange={(e) =>
+                      setNewElement({
+                        ...newElement,
+                        properties: {
+                          ...defaultContainerProperties,
+                          ...newElement.properties,
+                          backgroundColor: e.target.value,
+                        },
+                      })
+                    }
+                  />
+                </div>
+                <div>
+                  <Label>Border Radius</Label>
+                  <Input
+                    type="text"
+                    value={newElement.properties?.borderRadius ?? "8px"}
+                    onChange={(e) =>
+                      setNewElement({
+                        ...newElement,
+                        properties: {
+                          ...defaultContainerProperties,
+                          ...newElement.properties,
+                          borderRadius: e.target.value,
+                        },
+                      })
+                    }
+                    placeholder="8px"
+                  />
+                </div>
+                <div>
+                  <Label>Padding</Label>
+                  <Input
+                    type="text"
+                    value={newElement.properties?.padding ?? "16px"}
+                    onChange={(e) =>
+                      setNewElement({
+                        ...newElement,
+                        properties: {
+                          ...defaultContainerProperties,
+                          ...newElement.properties,
+                          padding: e.target.value,
+                        },
+                      })
+                    }
+                    placeholder="16px"
                   />
                 </div>
               </div>
