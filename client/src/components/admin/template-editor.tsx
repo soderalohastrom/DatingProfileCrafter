@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import type { Theme, InsertTheme, SlideElement } from "@shared/schema";
+import type { Theme, InsertTheme } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 import SlideDesigner from "./slide-designer";
 
@@ -16,18 +16,28 @@ interface TemplateEditorProps {
 
 export default function TemplateEditor({ theme }: TemplateEditorProps) {
   const [currentSlide, setCurrentSlide] = useState(1);
-  const [formData, setFormData] = useState<Partial<InsertTheme>>(
-    theme ?? {
-      name: "",
-      description: "",
-      backgroundImages: {
-        slide1: "",
-        slide2: "",
-        slide3: "",
-      },
-      isActive: true,
+  const [formData, setFormData] = useState<Partial<InsertTheme>>({
+    name: "",
+    description: "",
+    backgroundImages: {
+      slide1: "",
+      slide2: "",
+      slide3: "",
+    },
+    isActive: true,
+  });
+
+  // Update form data when theme changes
+  useEffect(() => {
+    if (theme) {
+      setFormData({
+        name: theme.name,
+        description: theme.description,
+        backgroundImages: theme.backgroundImages,
+        isActive: theme.isActive,
+      });
     }
-  );
+  }, [theme]);
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -75,6 +85,7 @@ export default function TemplateEditor({ theme }: TemplateEditorProps) {
                 onChange={(e) =>
                   setFormData({ ...formData, name: e.target.value })
                 }
+                placeholder="Enter theme name"
               />
             </div>
             <div>
@@ -85,6 +96,7 @@ export default function TemplateEditor({ theme }: TemplateEditorProps) {
                 onChange={(e) =>
                   setFormData({ ...formData, description: e.target.value })
                 }
+                placeholder="Enter theme description"
               />
             </div>
           </div>

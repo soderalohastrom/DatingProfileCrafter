@@ -59,6 +59,7 @@ const defaultContainerProperties = {
 const defaultImageProperties = {
   objectFit: "cover",
   borderRadius: "0px",
+  isPlaceholder: true, // Add this flag to identify placeholder images
 };
 
 interface SlideDesignerProps {
@@ -185,7 +186,7 @@ export default function SlideDesigner({
         newElement.elementType === "container"
           ? defaultContainerProperties
           : newElement.elementType === "image"
-            ? defaultImageProperties
+            ? { ...defaultImageProperties }
             : {
               ...defaultTextProperties,
               name: selectedField?.id || 'customText',
@@ -508,8 +509,11 @@ export default function SlideDesigner({
               onClick={() => setSelectedElement(element)}
             >
               {element.elementType === "image" ? (
-                <div className="w-full h-full bg-muted flex items-center justify-center">
-                  <Image className="w-8 h-8 text-muted-foreground" />
+                <div className="w-full h-full bg-muted flex items-center justify-center border-2 border-dashed border-muted-foreground">
+                  <div className="text-center">
+                    <Image className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+                    <p className="text-sm text-muted-foreground">Click to select image (in profile)</p>
+                  </div>
                 </div>
               ) : (
                 element.content
