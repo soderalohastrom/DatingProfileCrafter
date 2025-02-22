@@ -142,9 +142,9 @@ export default function SlideDesigner({
       ...newElement,
       themeId,
       slideNumber,
-      properties: 
-        newElement.elementType === "container" 
-          ? defaultContainerProperties 
+      properties:
+        newElement.elementType === "container"
+          ? defaultContainerProperties
           : newElement.elementType === "image"
           ? defaultImageProperties
           : defaultTextProperties,
@@ -205,10 +205,11 @@ export default function SlideDesigner({
 
       {/* Slide Preview */}
       <Card
-        className="w-[1920px] h-[1080px] relative bg-white"
+        className="w-[1920px] h-[1080px] relative bg-white mb-4"
         style={{
           transform: "scale(0.4)",
           transformOrigin: "top left",
+          marginBottom: '-45%',
           backgroundImage: backgroundImage ? `url(${backgroundImage})` : undefined,
           backgroundSize: "cover",
           backgroundPosition: "center",
@@ -250,9 +251,9 @@ export default function SlideDesigner({
               onClick={() => setSelectedElement(element)}
             >
               {element.elementType === "image" ? (
-                <img 
-                  src={element.content} 
-                  alt="Element" 
+                <img
+                  src={element.content}
+                  alt="Element"
                   className="w-full h-full object-cover"
                   style={{ borderRadius: element.properties.borderRadius }}
                 />
@@ -278,9 +279,9 @@ export default function SlideDesigner({
                     ...newElement,
                     elementType: value,
                     content: value === "text" ? "New Text Element" : "",
-                    properties: 
-                      value === "container" 
-                        ? defaultContainerProperties 
+                    properties:
+                      value === "container"
+                        ? defaultContainerProperties
                         : value === "image"
                         ? defaultImageProperties
                         : defaultTextProperties,
@@ -537,8 +538,8 @@ export default function SlideDesigner({
             )}
           </div>
 
-          <Button 
-            onClick={handleAddElement} 
+          <Button
+            onClick={handleAddElement}
             className="w-full"
             disabled={elementMutation.isPending}
           >

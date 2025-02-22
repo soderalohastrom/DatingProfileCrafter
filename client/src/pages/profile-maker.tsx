@@ -4,7 +4,7 @@ import ProfileTemplate from "@/components/profile-templates";
 import { Button } from "@/components/ui/button";
 import { Download, Image } from "lucide-react";
 import { useState, useEffect } from "react";
-import type { Profile } from "@shared/schema";
+import type { Profile, Theme } from "@shared/schema";
 import type { TemplateType } from "@/components/profile-templates";
 import { exportToPDF, exportToImages } from "@/lib/export-utils";
 import { triggerConfetti } from "@/lib/utils";
@@ -22,6 +22,10 @@ export default function ProfileMaker() {
     queryKey: ["/api/profiles"],
   });
 
+  const { data: customThemes = [] } = useQuery<Theme[]>({
+    queryKey: ["/api/admin/themes"],
+  });
+
   const [profile, setProfile] = useState<Partial<Profile>>({
     firstName: "",
     age: 18,
@@ -33,7 +37,7 @@ export default function ProfileMaker() {
     photoUrl: "https://via.placeholder.com/400x400",
   });
 
-  const [template, setTemplate] = useState<TemplateType>("modern");
+  const [template, setTemplate] = useState<TemplateType | string>("modern");
   const [matchmakerTake, setMatchmakerTake] = useState("");
 
   // Load profile from URL parameter on mount
@@ -53,12 +57,12 @@ export default function ProfileMaker() {
 
   const handleExportPDF = async () => {
     await exportToPDF();
-    triggerConfetti(); // Celebrate PDF export
+    triggerConfetti();
   };
 
   const handleExportImages = async () => {
     await exportToImages();
-    triggerConfetti(); // Celebrate PNG export
+    triggerConfetti();
   };
 
   const handleProfileChange = (profileId: string) => {
@@ -122,15 +126,30 @@ export default function ProfileMaker() {
           </Button>
           <Select
             value={template}
-            onValueChange={(value) => setTemplate(value as TemplateType)}
+            onValueChange={(value) => setTemplate(value)}
           >
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Select template" />
             </SelectTrigger>
             <SelectContent>
+              {/* Built-in templates */}
               <SelectItem value="modern">Modern Template</SelectItem>
               <SelectItem value="classic">Classic Template</SelectItem>
               <SelectItem value="minimal">Minimal Template</SelectItem>
+
+              {/* Custom templates */}
+              {customThemes.length > 0 && (
+                <>
+                  <SelectItem value="divider" disabled>
+                    ── Custom Templates ──
+                  </SelectItem>
+                  {customThemes.map((theme) => (
+                    <SelectItem key={theme.id} value={`custom_${theme.id}`}>
+                      {theme.name || "Untitled Theme"}
+                    </SelectItem>
+                  ))}
+                </>
+              )}
             </SelectContent>
           </Select>
         </div>
