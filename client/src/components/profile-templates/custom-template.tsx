@@ -9,7 +9,9 @@ interface CustomTemplateProps {
   onUpdateMatchmakerTake?: (text: string) => void;
 }
 
-function mapProfileToContent(content: string, profile: Partial<Profile>): string {
+function mapProfileToContent(content: string | null, profile: Partial<Profile>): string {
+  if (!content) return '';
+
   const mappings: Record<string, string | number | undefined> = {
     '{firstName}': profile.firstName,
     '{age}': profile.age,
@@ -54,7 +56,7 @@ export default function CustomTemplate({
           value={`slide${slideNumber}`}
           className="w-[1920px] h-[1080px] relative"
           style={{
-            backgroundImage: `url(${theme.backgroundImages[`slide${slideNumber}` as "slide1"]})`,
+            backgroundImage: `url(${theme.backgroundImages[`slide${slideNumber}` as keyof Theme['backgroundImages']]})`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
           }}
@@ -73,7 +75,7 @@ export default function CustomTemplate({
             >
               {element.elementType === "image" ? (
                 <img
-                  src={element.content}
+                  src={element.content || ''}
                   alt="Element"
                   className="w-full h-full object-cover"
                   style={{ borderRadius: element.properties.borderRadius }}

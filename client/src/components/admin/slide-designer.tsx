@@ -17,19 +17,23 @@ import {
 } from "@/components/ui/select";
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Image, Type, Square, Grid, Trash2 } from "lucide-react";
+import { Plus, Image, Type, Square, Grid, Trash2, TextQuote } from "lucide-react";
 import type { SlideElement, InsertSlideElement } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 import DraggableElement from "../draggable-element";
 import ImageSelector from "../image-selector";
 import { useToast } from "@/hooks/use-toast";
 
-interface SlideDesignerProps {
-  themeId?: number;
-  slideNumber: number;
-  backgroundImage?: string;
-  onUpdateBackground: (url: string) => void;
-}
+// Profile field options for the text content dropdown
+const PROFILE_FIELDS = [
+  { id: 'firstName', label: 'First Name', placeholder: '{firstName}' },
+  { id: 'age', label: 'Age', placeholder: '{age}' },
+  { id: 'location', label: 'Location', placeholder: '{location}' },
+  { id: 'occupation', label: 'Occupation', placeholder: '{occupation}' },
+  { id: 'education', label: 'Education', placeholder: '{education}' },
+  { id: 'interests', label: 'Interests', placeholder: '{interests}' },
+  { id: 'bio', label: 'Bio', placeholder: '{bio}' },
+];
 
 const defaultPosition = {
   x: 0,
@@ -57,6 +61,13 @@ const defaultImageProperties = {
   borderRadius: "0px",
 };
 
+interface SlideDesignerProps {
+  themeId?: number;
+  slideNumber: number;
+  backgroundImage?: string;
+  onUpdateBackground: (url: string) => void;
+}
+
 export default function SlideDesigner({
   themeId,
   slideNumber,
@@ -79,13 +90,11 @@ export default function SlideDesigner({
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Fetch slide elements
   const { data: elements = [] } = useQuery<SlideElement[]>({
     queryKey: [`/api/admin/themes/${themeId}/slides/${slideNumber}/elements`],
     enabled: !!themeId,
   });
 
-  // Create new element
   const elementMutation = useMutation({
     mutationFn: async (data: InsertSlideElement) => {
       const res = await apiRequest(
@@ -112,7 +121,6 @@ export default function SlideDesigner({
     },
   });
 
-  // Update element position
   const updateElementMutation = useMutation({
     mutationFn: async ({
       id,
@@ -135,7 +143,6 @@ export default function SlideDesigner({
     },
   });
 
-  // Delete element
   const deleteElementMutation = useMutation({
     mutationFn: async (id: number) => {
       await apiRequest(
@@ -208,7 +215,7 @@ export default function SlideDesigner({
   };
 
   const handleDeleteElement = (e: React.MouseEvent, element: SlideElement) => {
-    e.stopPropagation(); // Prevent element selection
+    e.stopPropagation(); 
     if (confirm(`Are you sure you want to delete this element?`)) {
       deleteElementMutation.mutate(element.id);
     }
@@ -216,7 +223,6 @@ export default function SlideDesigner({
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Add New Element Section - Now at the top */}
       <Card className="p-4">
         <div className="space-y-4">
           <h3 className="text-lg font-semibold">Add New Element</h3>
@@ -229,7 +235,7 @@ export default function SlideDesigner({
                   setNewElement({
                     ...newElement,
                     elementType: value,
-                    content: value === "text" ? "New Text Element" : "",
+                    content: value === "text" ? "New Text Element" : value === "freeform" ? "" : "",
                     properties:
                       value === "container"
                         ? defaultContainerProperties
@@ -247,6 +253,12 @@ export default function SlideDesigner({
                     <div className="flex items-center gap-2">
                       <Type className="w-4 h-4" />
                       <span>Text</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="freeform">
+                    <div className="flex items-center gap-2">
+                      <TextQuote className="w-4 h-4" />
+                      <span>Freeform Text</span>
                     </div>
                   </SelectItem>
                   <SelectItem value="container">
@@ -268,6 +280,32 @@ export default function SlideDesigner({
             {newElement.elementType === "text" && (
               <div className="col-span-2">
                 <Label>Content</Label>
+                <Select
+                  value={newElement.content}
+                  onValueChange={(value) =>
+                    setNewElement({
+                      ...newElement,
+                      content: value,
+                    })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select field" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PROFILE_FIELDS.map((field) => (
+                      <SelectItem key={field.id} value={field.placeholder}>
+                        {field.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            {newElement.elementType === "freeform" && (
+              <div className="col-span-2">
+                <Label>Content</Label>
                 <Input
                   value={newElement.content}
                   onChange={(e) =>
@@ -276,7 +314,7 @@ export default function SlideDesigner({
                       content: e.target.value,
                     })
                   }
-                  placeholder="Enter text content"
+                  placeholder="Enter custom text"
                 />
               </div>
             )}
@@ -294,7 +332,6 @@ export default function SlideDesigner({
               </div>
             )}
 
-            {/* Position Controls */}
             <div className="col-span-3 grid grid-cols-4 gap-4">
               <div>
                 <Label>X Position</Label>
@@ -366,7 +403,6 @@ export default function SlideDesigner({
               </div>
             </div>
 
-            {/* Properties Controls */}
             {newElement.elementType === "text" && (
               <div className="col-span-3 grid grid-cols-3 gap-4">
                 <div>
@@ -500,7 +536,6 @@ export default function SlideDesigner({
         </div>
       </Card>
 
-      {/* Background and Grid Controls */}
       <div className="flex items-center gap-4">
         <Button
           variant="outline"
@@ -520,7 +555,6 @@ export default function SlideDesigner({
         </Button>
       </div>
 
-      {/* Slide Preview - Now at the bottom */}
       <Card
         className="w-[1920px] h-[1080px] relative bg-white mb-8"
         style={{
@@ -532,7 +566,6 @@ export default function SlideDesigner({
           backgroundPosition: "center",
         }}
       >
-        {/* Grid Overlay */}
         {showGrid && (
           <div
             className="absolute inset-0"
@@ -547,7 +580,6 @@ export default function SlideDesigner({
           />
         )}
 
-        {/* Elements */}
         {elements.map((element) => (
           <DraggableElement
             key={element.id}
