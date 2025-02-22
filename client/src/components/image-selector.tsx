@@ -32,17 +32,22 @@ export default function ImageSelector({
   const [uploadError, setUploadError] = useState<string | null>(null);
 
   // Fetch images from the server, including directory parameter if provided
-  const { data: images = [], refetch } = useQuery<ImageData[]>({
+  const { data: images = [], error, isLoading } = useQuery<ImageData[]>({
     queryKey: ['images', directory],
     queryFn: async () => {
       const params = new URLSearchParams();
-      if (directory) params.append('directory', directory);
+      if (directory) {
+        params.append('directory', directory);
+        console.log('Fetching images from directory:', directory);
+      }
 
       const response = await fetch(`/api/upload?${params.toString()}`);
       if (!response.ok) {
         throw new Error('Failed to fetch images');
       }
-      return response.json();
+      const data = await response.json();
+      console.log('Received images:', data);
+      return data;
     }
   });
 
@@ -70,7 +75,6 @@ export default function ImageSelector({
       const data = await response.json();
       onSelect(data.url);
       onOpenChange(false);
-      refetch();
     } catch (error) {
       setUploadError("Failed to upload image. Please try again.");
     } finally {
@@ -111,6 +115,20 @@ export default function ImageSelector({
           )}
         </div>
 
+        {/* Loading State */}
+        {isLoading && (
+          <div className="text-center py-8">
+            Loading images...
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && (
+          <div className="text-center py-8 text-red-500">
+            Error loading images: {error.message}
+          </div>
+        )}
+
         {/* Image Grid */}
         <div className="grid grid-cols-3 gap-4 p-4 max-h-[400px] overflow-y-auto">
           {images.map((image, index) => (
@@ -135,9 +153,9 @@ export default function ImageSelector({
               </div>
             </div>
           ))}
-          {images.length === 0 && (
+          {!isLoading && !error && images.length === 0 && (
             <div className="col-span-3 text-center py-8 text-muted-foreground">
-              No images found in this directory
+              No images found in directory: {directory}
             </div>
           )}
         </div>
