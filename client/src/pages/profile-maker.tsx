@@ -96,6 +96,14 @@ export default function ProfileMaker() {
     setTemplate(value);
   };
 
+  // Extract theme ID from template value if it's a custom template
+  const getThemeId = () => {
+    if (typeof template === 'string' && template.startsWith('custom_')) {
+      return parseInt(template.split('_')[1]);
+    }
+    return undefined;
+  };
+
   return (
     <div className="h-screen bg-background">
       <div className="container mx-auto py-6">
@@ -175,7 +183,11 @@ export default function ProfileMaker() {
         >
           <ResizablePanel defaultSize={40} minSize={30}>
             <div className="p-6">
-              <ProfileForm profile={profile} onChange={setProfile} />
+              <ProfileForm
+                profile={profile}
+                onChange={setProfile}
+                templateId={getThemeId()}
+              />
             </div>
           </ResizablePanel>
           <ResizablePanel defaultSize={60} minSize={30}>

@@ -180,7 +180,13 @@ export default function SlideDesigner({
           ? defaultContainerProperties
           : newElement.elementType === "image"
           ? defaultImageProperties
-          : defaultTextProperties,
+          : {
+              ...defaultTextProperties,
+              // Add a name property for text elements
+              name: newElement.elementType === "text"
+                ? `custom_field_${Date.now()}`  // Generate unique name
+                : undefined
+            },
     };
 
     elementMutation.mutate(elementData as InsertSlideElement);
@@ -215,7 +221,7 @@ export default function SlideDesigner({
   };
 
   const handleDeleteElement = (e: React.MouseEvent, element: SlideElement) => {
-    e.stopPropagation(); 
+    e.stopPropagation();
     if (confirm(`Are you sure you want to delete this element?`)) {
       deleteElementMutation.mutate(element.id);
     }

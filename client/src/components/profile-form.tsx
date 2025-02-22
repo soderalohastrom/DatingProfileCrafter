@@ -15,14 +15,29 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect } from "react";
 import { triggerConfetti } from "@/lib/utils";
+import { useQuery } from "@tanstack/react-query";
+import type { SlideElement } from "@shared/schema";
 
 interface ProfileFormProps {
   profile: Partial<Profile>;
   onChange: (profile: Partial<Profile>) => void;
+  templateId?: number;
 }
 
-export default function ProfileForm({ profile, onChange }: ProfileFormProps) {
+export default function ProfileForm({ profile, onChange, templateId }: ProfileFormProps) {
   const { toast } = useToast();
+
+  // Fetch template elements if we have a custom template
+  const { data: templateElements = [] } = useQuery<SlideElement[]>({
+    queryKey: [`/api/admin/themes/${templateId}/slides/1/elements`],
+    enabled: !!templateId,
+  });
+
+  // Get text elements that have a name property
+  const customTextElements = templateElements.filter(
+    (element) => element.elementType === "text" && element.properties?.name
+  );
+
   const form = useForm<InsertProfile>({
     resolver: zodResolver(insertProfileSchema),
     defaultValues: {
@@ -34,10 +49,16 @@ export default function ProfileForm({ profile, onChange }: ProfileFormProps) {
       interests: "",
       bio: "",
       photoUrl: "https://via.placeholder.com/400x400",
+      ...Object.fromEntries(
+        customTextElements.map((element) => [
+          element.properties.name,
+          profile[element.properties.name as keyof Profile] || ""
+        ])
+      ),
     },
   });
 
-  // Reset form when profile changes
+  // Reset form when profile or template changes
   useEffect(() => {
     form.reset({
       firstName: profile.firstName || "",
@@ -48,8 +69,14 @@ export default function ProfileForm({ profile, onChange }: ProfileFormProps) {
       interests: profile.interests || "",
       bio: profile.bio || "",
       photoUrl: profile.photoUrl || "https://via.placeholder.com/400x400",
+      ...Object.fromEntries(
+        customTextElements.map((element) => [
+          element.properties.name,
+          profile[element.properties.name as keyof Profile] || ""
+        ])
+      ),
     });
-  }, [profile, form.reset]);
+  }, [profile, templateElements, form.reset]);
 
   const onSubmit = async (data: InsertProfile) => {
     try {
@@ -63,7 +90,6 @@ export default function ProfileForm({ profile, onChange }: ProfileFormProps) {
         throw new Error("Failed to save profile");
       }
 
-      // Trigger confetti animation on successful profile creation
       triggerConfetti();
 
       toast({
@@ -82,6 +108,7 @@ export default function ProfileForm({ profile, onChange }: ProfileFormProps) {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        {/* Standard profile fields */}
         <FormField
           control={form.control}
           name="firstName"
@@ -207,6 +234,34 @@ export default function ProfileForm({ profile, onChange }: ProfileFormProps) {
             </FormItem>
           )}
         />
+
+        {/* Custom template fields */}
+        {customTextElements.map((element) => (
+          <FormField
+            key={element.id}
+            control={form.control}
+            name={element.properties.name as keyof InsertProfile}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>
+                  {element.properties.name.split('_').map(word => 
+                    word.charAt(0).toUpperCase() + word.slice(1)
+                  ).join(' ')}
+                </FormLabel>
+                <FormControl>
+                  <Input {...field} onChange={(e) => {
+                    field.onChange(e);
+                    onChange({
+                      ...profile,
+                      [element.properties.name]: e.target.value
+                    });
+                  }} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        ))}
 
         <Button type="submit" className="w-full">Save Profile</Button>
       </form>
