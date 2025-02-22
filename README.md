@@ -27,6 +27,27 @@ Each template includes a consistent 3-slide layout:
   - Full-height profile image
   - Customizable matchmaker observations
 
+### Image Management
+- Categorized image selection system:
+  - Headshots: Professional profile photos for main slides
+  - Lifestyle: Casual and activity-based photos for bio sections
+  - Formal: Business portraits for matchmaker sections
+- Pre-curated image library in designated directories
+- Context-aware image selection based on placement
+- Image cropping and position adjustment
+- Standardized 16:9 aspect ratio (1920x1080px)
+
+### Directory Structure
+```
+assets/
+├── sample-images/     # Curated profile images
+│   ├── headshots/    # Professional headshot photos
+│   ├── lifestyle/    # Casual and activity photos
+│   └── formal/       # Business formal portraits
+├── backgrounds/      # Slide background images
+└── logos/           # Brand and design assets
+```
+
 ### Custom Template Features
 - Visual template designer with drag-and-drop elements
 - Support for text, image, and container elements
@@ -36,35 +57,20 @@ Each template includes a consistent 3-slide layout:
   - Built-in templates show standard profile fields
   - Custom templates show only fields created in designer
   - Automatic text element binding between form and preview
-- Synchronized field labels between designer and form:
-  - Form field labels match content selection from designer
-  - Consistent naming convention for database compatibility
-  - Real-time updates between form input and template display
-
-### Image Management
-- Image selector modal for profile photos
-- Multiple image placement options per slide
-- Clickable avatar elements to trigger image selection
-- Support for different image positions in templates
-- Standardized 16:9 aspect ratio (1920x1080px)
 
 ### Export Options
 - Export to multiple PNG images (one per slide)
 - Export to multi-page PDF
 - Maintains slide/page structure in exports
 
-## Next Steps
+## Upcoming Features
 
-### Background Image Integration
-1. **Directory Structure**
-   - Configure background image selector to read from `/backgrounds/slides`
-   - Implement thumbnail display for available background images
-   - Add background image preview in selector modal
-
-2. **Image Management**
-   - Support background image uploads to correct directory
-   - Implement background image cropping/scaling
-   - Add background overlay options for text readability
+### MySQL Database Integration
+- Profile loading via URL parameters (`?profile_id=123456`)
+- Database schema aligned with profile structure
+- Efficient profile data retrieval and caching
+- Real-time profile updates
+- Secure data handling and validation
 
 ### Technical Implementation Notes
 
@@ -77,29 +83,23 @@ Each template includes a consistent 3-slide layout:
    ```
 
 2. Data Flow:
-   - URL parameter triggers profile load
+   - URL parameter triggers profile load from MySQL
    - Form fields populate with profile data
    - Template updates in real-time
    - Changes sync between form and preview
-
-#### Custom Template System
-- Each custom template stored with unique ID
-- Element positions and properties preserved
-- Dynamic form generation based on template elements
-- Real-time synchronization between form and preview
 
 ## Technology Stack
 - Frontend: React/TypeScript
 - Styling: Tailwind CSS + shadcn/ui
 - State Management: React Query
-- Database: PostgreSQL (planned)
+- Database: MySQL (upcoming)
 - Export: html2canvas + jsPDF
 - Routing: wouter
 
 ## Development Guidelines
 
 1. Template Element Management
-   - Always maintain template element uniqueness
+   - Maintain template element uniqueness
    - Ensure proper cleanup when removing elements
    - Validate element names and properties
 
@@ -113,10 +113,10 @@ Each template includes a consistent 3-slide layout:
    - Use consistent naming for dynamic elements
    - Document element-form relationships
 
-4. Testing Requirements
-   - Verify form-template synchronization
-   - Test element addition/removal
-   - Validate data persistence
+4. Image Management
+   - Place images in appropriate category directories
+   - Maintain image quality standards per category
+   - Follow naming conventions for assets
 
 5. Future Considerations
    - Plan for template versioning
