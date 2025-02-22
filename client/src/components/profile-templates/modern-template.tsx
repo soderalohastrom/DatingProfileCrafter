@@ -1,6 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { type Profile } from "@shared/schema";
-import { Briefcase, GraduationCap, Heart, MapPin } from "lucide-react";
+import { Briefcase, GraduationCap, Heart, MapPin, Image } from "lucide-react";
 import { useState } from "react";
 import ImageSelector from "../image-selector";
 import { Textarea } from "@/components/ui/textarea";
@@ -75,19 +75,55 @@ export default function ModernTemplate({
     });
   };
 
+  // Render a clickable image placeholder or the actual image
+  const ImagePlaceholder = ({ 
+    onClick, 
+    className = "",
+    imageUrl = "",
+    aspectRatio = 1
+  }: { 
+    onClick: () => void, 
+    className?: string,
+    imageUrl?: string,
+    aspectRatio?: number
+  }) => (
+    <div 
+      className={`relative cursor-pointer ${className}`}
+      onClick={onClick}
+      style={{ aspectRatio }}
+    >
+      {imageUrl ? (
+        <ImageCropper
+          src={imageUrl}
+          placeholderClassName="w-full h-full"
+          aspectRatio={aspectRatio}
+          onPositionChange={(pos) => setImagePositions(prev => ({ 
+            ...prev, 
+            [imageSelector.type || 'main']: pos 
+          }))}
+        />
+      ) : (
+        <div className="w-full h-full bg-muted flex items-center justify-center border-2 border-dashed border-muted-foreground">
+          <div className="text-center">
+            <Image className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+            <p className="text-sm text-muted-foreground">Click to select image</p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
   // Slide 1: Main Profile
   const MainProfileSlide = (
     <SlideWrapper id="slide-1">
       <div className="h-full flex flex-col">
         <div className="bg-gradient-to-r from-primary/10 to-primary/5 p-16">
           <div className="flex gap-16 items-start">
-            <div className="relative" onClick={() => handleImageClick("main")}>
-              <ImageCropper
-                src={profile.photoUrl || ''}
-                placeholderClassName="w-[300px] h-[300px] rounded-full border-4 border-white shadow-lg cursor-pointer hover:opacity-90 transition-opacity"
-                onPositionChange={(pos) => setImagePositions(prev => ({ ...prev, main: pos }))}
-              />
-            </div>
+            <ImagePlaceholder
+              onClick={() => handleImageClick("main")}
+              className="w-[300px] h-[300px] rounded-full border-4 border-white shadow-lg hover:opacity-90 transition-opacity"
+              imageUrl={profile.photoUrl}
+            />
             <div>
               <h2 className="text-7xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
                 {profile.firstName}, {profile.age}
@@ -140,13 +176,11 @@ export default function ModernTemplate({
           <p className="text-2xl text-muted-foreground whitespace-pre-wrap">{profile.bio}</p>
         </div>
         <div className="flex items-center justify-center bg-gradient-to-br from-primary/5 to-primary/10">
-          <div className="relative" onClick={() => handleImageClick("bio")}>
-            <ImageCropper
-              src={profile.photoUrl || ''}
-              placeholderClassName="w-[400px] h-[400px] rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
-              onPositionChange={(pos) => setImagePositions(prev => ({ ...prev, bio: pos }))}
-            />
-          </div>
+          <ImagePlaceholder
+            onClick={() => handleImageClick("bio")}
+            className="w-[400px] h-[400px] rounded-lg hover:opacity-90 transition-opacity"
+            imageUrl={profile.photoUrl}
+          />
         </div>
       </div>
     </SlideWrapper>
@@ -156,17 +190,12 @@ export default function ModernTemplate({
   const MatchmakerSlide = (
     <SlideWrapper id="slide-3">
       <div className="h-full grid" style={{ gridTemplateColumns: '1fr 3fr' }}>
-        <div 
-          className="relative cursor-pointer"
+        <ImagePlaceholder
           onClick={() => handleImageClick("matchmaker")}
-        >
-          <ImageCropper
-            src={profile.photoUrl || ''}
-            placeholderClassName="w-full h-full"
-            aspectRatio={9/16}
-            onPositionChange={(pos) => setImagePositions(prev => ({ ...prev, matchmaker: pos }))}
-          />
-        </div>
+          className="w-full h-full"
+          imageUrl={profile.photoUrl}
+          aspectRatio={9/16}
+        />
         <div className="p-16 space-y-8">
           <h3 className="text-5xl font-semibold">Matchmaker's Take</h3>
           <Textarea
