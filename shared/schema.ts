@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, jsonb, boolean } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -14,11 +14,57 @@ export const profiles = pgTable("profiles", {
   photoUrl: text("photo_url").notNull(),
 });
 
-// Create the insert schema
+export const templateThemes = pgTable("template_themes", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description").notNull(),
+  backgroundImages: jsonb("background_images").$type<{
+    slide1: string;
+    slide2: string;
+    slide3: string;
+  }>().notNull(),
+  isActive: boolean("is_active").notNull().default(true),
+});
+
+export const slideElements = pgTable("slide_elements", {
+  id: serial("id").primaryKey(),
+  themeId: integer("theme_id").notNull(),
+  slideNumber: integer("slide_number").notNull(), 
+  elementType: text("element_type").notNull(), 
+  position: jsonb("position").$type<{
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  }>().notNull(),
+  properties: jsonb("properties").$type<{
+    fontSize?: string;
+    fontWeight?: string;
+    color?: string;
+    backgroundColor?: string;
+    padding?: string;
+    borderRadius?: string;
+  }>().notNull(),
+  content: text("content"), 
+});
+
 export const insertProfileSchema = createInsertSchema(profiles).omit({ 
   id: true 
 });
 
-// Export types for use in components
+export const insertThemeSchema = createInsertSchema(templateThemes).omit({
+  id: true
+});
+
+export const insertSlideElementSchema = createInsertSchema(slideElements).omit({
+  id: true
+});
+
 export type InsertProfile = z.infer<typeof insertProfileSchema>;
 export type Profile = typeof profiles.$inferSelect;
+
+export type InsertTheme = z.infer<typeof insertThemeSchema>;
+export type Theme = typeof templateThemes.$inferSelect;
+
+export type InsertSlideElement = z.infer<typeof insertSlideElementSchema>;
+export type SlideElement = typeof slideElements.$inferSelect;
