@@ -1,9 +1,11 @@
-import { type Profile } from "@shared/schema";
+import { type Profile, type Theme } from "@shared/schema";
 import ModernTemplate from "./modern-template";
 import ClassicTemplate from "./classic-template";
 import MinimalTemplate from "./minimal-template";
+import CustomTemplate from "./custom-template";
+import { useQuery } from "@tanstack/react-query";
 
-export type TemplateType = "modern" | "classic" | "minimal";
+export type TemplateType = "modern" | "classic" | "minimal" | string;
 
 interface ProfileTemplateProps {
   profile: Partial<Profile>;
@@ -18,6 +20,28 @@ export default function ProfileTemplate({
   onUpdatePhoto,
   onUpdateMatchmakerTake 
 }: ProfileTemplateProps) {
+  const { data: themes = [] } = useQuery<Theme[]>({
+    queryKey: ["/api/admin/themes"],
+  });
+
+  // Handle custom templates
+  if (typeof template === 'string' && template.startsWith('custom_')) {
+    const themeId = parseInt(template.split('_')[1]);
+    const customTheme = themes.find(t => t.id === themeId);
+
+    if (customTheme) {
+      return (
+        <CustomTemplate 
+          profile={profile} 
+          theme={customTheme}
+          onUpdatePhoto={onUpdatePhoto}
+          onUpdateMatchmakerTake={onUpdateMatchmakerTake}
+        />
+      );
+    }
+  }
+
+  // Handle built-in templates
   switch (template) {
     case "modern":
       return <ModernTemplate profile={profile} onUpdatePhoto={onUpdatePhoto} onUpdateMatchmakerTake={onUpdateMatchmakerTake} />;

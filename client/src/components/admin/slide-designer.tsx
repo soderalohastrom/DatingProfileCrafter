@@ -205,11 +205,11 @@ export default function SlideDesigner({
 
       {/* Slide Preview */}
       <Card
-        className="w-[1920px] h-[1080px] relative bg-white mb-4"
+        className="w-[1920px] h-[1080px] relative bg-white mb-8"
         style={{
           transform: "scale(0.4)",
           transformOrigin: "top left",
-          marginBottom: '-45%',
+          marginBottom: '-35%',
           backgroundImage: backgroundImage ? `url(${backgroundImage})` : undefined,
           backgroundSize: "cover",
           backgroundPosition: "center",
