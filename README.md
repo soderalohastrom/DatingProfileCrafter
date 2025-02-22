@@ -36,6 +36,10 @@ Each template includes a consistent 3-slide layout:
   - Built-in templates show standard profile fields
   - Custom templates show only fields created in designer
   - Automatic text element binding between form and preview
+- Synchronized field labels between designer and form:
+  - Form field labels match content selection from designer
+  - Consistent naming convention for database compatibility
+  - Real-time updates between form input and template display
 
 ### Image Management
 - Image selector modal for profile photos
@@ -51,21 +55,16 @@ Each template includes a consistent 3-slide layout:
 
 ## Next Steps
 
-### Template Field Mapping Enhancement
-1. **Form-Designer Synchronization**
-   - Ensure number of form fields matches created text elements
-   - Implement one-to-one mapping between designer elements and form inputs
-   - Update form fields dynamically when adding/removing elements
+### Background Image Integration
+1. **Directory Structure**
+   - Configure background image selector to read from `/backgrounds/slides`
+   - Implement thumbnail display for available background images
+   - Add background image preview in selector modal
 
-2. **Database Integration (Planned)**
-   - Store element mapping configurations
-   - Persist custom template layouts
-   - Save form field associations
-
-3. **Element Naming System**
-   - Implement unique identifiers for custom fields
-   - Create consistent naming convention for dynamic elements
-   - Support template versioning
+2. **Image Management**
+   - Support background image uploads to correct directory
+   - Implement background image cropping/scaling
+   - Add background overlay options for text readability
 
 ### Technical Implementation Notes
 
