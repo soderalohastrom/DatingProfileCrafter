@@ -31,14 +31,17 @@ export default function ImageSelector({
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
+  // Format directory path for API
+  const formattedDirectory = directory?.replace('@/', '');
+
   // Fetch images from the server, including directory parameter if provided
   const { data: images = [], error, isLoading } = useQuery<ImageData[]>({
-    queryKey: ['images', directory],
+    queryKey: ['images', formattedDirectory],
     queryFn: async () => {
       const params = new URLSearchParams();
-      if (directory) {
-        params.append('directory', directory);
-        console.log('Fetching images from directory:', directory);
+      if (formattedDirectory) {
+        params.append('directory', formattedDirectory);
+        console.log('Fetching images from directory:', formattedDirectory);
       }
 
       const response = await fetch(`/api/upload?${params.toString()}`);
@@ -60,7 +63,7 @@ export default function ImageSelector({
 
     const formData = new FormData();
     formData.append("image", file);
-    if (directory) formData.append("directory", directory);
+    if (formattedDirectory) formData.append("directory", formattedDirectory);
 
     try {
       const response = await fetch("/api/upload", {
@@ -87,7 +90,7 @@ export default function ImageSelector({
       <DialogContent className="sm:max-w-[800px]">
         <DialogHeader>
           <DialogTitle>
-            {directory?.includes('background') ? "Select Background Image" : "Select Profile Image"}
+            {formattedDirectory?.includes('backgrounds') ? "Select Background Image" : "Select Profile Image"}
           </DialogTitle>
         </DialogHeader>
 
@@ -155,7 +158,7 @@ export default function ImageSelector({
           ))}
           {!isLoading && !error && images.length === 0 && (
             <div className="col-span-3 text-center py-8 text-muted-foreground">
-              No images found in directory: {directory}
+              No images found in directory: {formattedDirectory}
             </div>
           )}
         </div>
