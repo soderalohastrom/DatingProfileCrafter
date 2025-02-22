@@ -5,7 +5,7 @@ import {
   type SlideElement, type InsertSlideElement 
 } from "@shared/schema";
 import { db } from "./db";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 
 export interface IStorage {
   // Profile Management
@@ -109,8 +109,12 @@ export class DatabaseStorage implements IStorage {
     return await db
       .select()
       .from(slideElements)
-      .where(eq(slideElements.themeId, themeId))
-      .where(eq(slideElements.slideNumber, slideNumber));
+      .where(
+        and(
+          eq(slideElements.themeId, themeId),
+          eq(slideElements.slideNumber, slideNumber)
+        )
+      );
   }
 
   async createSlideElement(element: InsertSlideElement): Promise<SlideElement> {
