@@ -6,6 +6,10 @@ import { useState } from "react";
 import ImageSelector from "../image-selector";
 import { Textarea } from "@/components/ui/textarea";
 
+// Import background images
+import backgroundLogo from "@/assets/backgrounds/classic/background_logo.png";
+import backgroundBlank from "@/assets/backgrounds/classic/background_blank.png";
+
 interface ClassicTemplateProps {
   profile: Partial<Profile>;
   onUpdatePhoto?: (url: string) => void;
@@ -13,13 +17,15 @@ interface ClassicTemplateProps {
 }
 
 // Common slide wrapper component
-const SlideWrapper = ({ children, id }: { children: React.ReactNode; id: string }) => (
+const SlideWrapper = ({ children, id, background }: { children: React.ReactNode; id: string; background: string }) => (
   <Card 
     className="w-[1920px] h-[1080px] mx-auto mb-8 slide-page overflow-hidden" 
     id={id}
     style={{ 
       aspectRatio: '16/9',
-      background: 'white'
+      backgroundImage: `url(${background})`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center'
     }}
   >
     <CardContent className="h-full p-0">
@@ -42,9 +48,9 @@ export default function ClassicTemplate({
     }
   };
 
-  // Slide 1: Main Profile
+  // Slide 1: Main Profile with Logo Background
   const MainProfileSlide = (
-    <SlideWrapper id="slide-1">
+    <SlideWrapper id="slide-1" background={backgroundLogo}>
       <div className="h-full p-16">
         {/* Logo Section */}
         <div className="flex items-center justify-center mb-12">
@@ -109,7 +115,7 @@ export default function ClassicTemplate({
 
   // Slide 2: Bio and Secondary Photo
   const BioSlide = (
-    <SlideWrapper id="slide-2">
+    <SlideWrapper id="slide-2" background={backgroundBlank}>
       <div className="h-full grid" style={{ gridTemplateColumns: '3fr 1fr' }}>
         <div className="p-16 space-y-8">
           <h3 className="text-5xl font-light uppercase tracking-wide mb-8">Biography</h3>
@@ -132,7 +138,7 @@ export default function ClassicTemplate({
 
   // Slide 3: Matchmaker's Take
   const MatchmakerSlide = (
-    <SlideWrapper id="slide-3">
+    <SlideWrapper id="slide-3" background={backgroundBlank}>
       <div className="h-full grid" style={{ gridTemplateColumns: '1fr 3fr' }}>
         <div 
           className="relative cursor-pointer hover:opacity-90 transition-opacity"

@@ -147,10 +147,14 @@ export default function ProfileMaker() {
             <div className="p-6 overflow-auto">
               <div
                 id="profile-template"
-                className="transform scale-[0.4] origin-top-left"
+                className="transform origin-top-left"
                 style={{
                   width: '1920px',
-                  marginBottom: '-60%'
+                  height: 'auto',
+                  transformOrigin: 'top left',
+                  transform: 'scale(0.4)',
+                  marginBottom: '-60%',
+                  imageRendering: 'crisp-edges'
                 }}
               >
                 <ProfileTemplate
