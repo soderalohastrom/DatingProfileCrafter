@@ -68,6 +68,15 @@ interface SlideDesignerProps {
   onUpdateBackground: (url: string) => void;
 }
 
+const generateElementName = (elementType: string): string => {
+  // Generate a more readable name for text elements
+  let baseName = "Custom Text";
+  let counter = 1;
+
+  // Todo: In future we'll store this in DB to persist naming across sessions
+  return `${baseName} ${counter}`;
+};
+
 export default function SlideDesigner({
   themeId,
   slideNumber,
@@ -182,9 +191,9 @@ export default function SlideDesigner({
           ? defaultImageProperties
           : {
               ...defaultTextProperties,
-              // Add a name property for text elements
+              // Add a descriptive name property for text elements
               name: newElement.elementType === "text"
-                ? `custom_field_${Date.now()}`  // Generate unique name
+                ? generateElementName("text")  // Use descriptive name generator
                 : undefined
             },
     };

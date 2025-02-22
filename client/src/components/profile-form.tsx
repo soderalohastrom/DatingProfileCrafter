@@ -25,6 +25,18 @@ interface ProfileFormProps {
   isBuiltInTemplate: boolean;
 }
 
+function formatFieldLabel(name: string): string {
+  // If it's our new format (e.g. "Custom Text 1"), return as is
+  if (name.startsWith("Custom Text")) {
+    return name;
+  }
+
+  // Otherwise handle legacy names by splitting and capitalizing
+  return name.split('_')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
 export default function ProfileForm({ profile, onChange, templateId, isBuiltInTemplate }: ProfileFormProps) {
   const { toast } = useToast();
 
@@ -136,9 +148,9 @@ export default function ProfileForm({ profile, onChange, templateId, isBuiltInTe
                 <FormItem>
                   <FormLabel>Age</FormLabel>
                   <FormControl>
-                    <Input 
-                      type="number" 
-                      {...field} 
+                    <Input
+                      type="number"
+                      {...field}
                       onChange={(e) => {
                         const value = parseInt(e.target.value);
                         field.onChange(value);
@@ -249,9 +261,7 @@ export default function ProfileForm({ profile, onChange, templateId, isBuiltInTe
             render={({ field }) => (
               <FormItem>
                 <FormLabel>
-                  {element.properties.name.split('_').map(word => 
-                    word.charAt(0).toUpperCase() + word.slice(1)
-                  ).join(' ')}
+                  {formatFieldLabel(element.properties.name)}
                 </FormLabel>
                 <FormControl>
                   <Input {...field} onChange={(e) => {
