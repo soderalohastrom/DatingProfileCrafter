@@ -16,8 +16,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useLocation } from "wouter";
 
 export default function ProfileMaker() {
+  const [, setLocation] = useLocation();
   const { data: profiles = [] } = useQuery<Profile[]>({
     queryKey: ["/api/profiles"],
   });
@@ -86,6 +88,14 @@ export default function ProfileMaker() {
     }
   };
 
+  const handleTemplateChange = (value: string) => {
+    if (value === "edit_templates") {
+      setLocation("/admin/templates");
+      return;
+    }
+    setTemplate(value);
+  };
+
   return (
     <div className="h-screen bg-background">
       <div className="container mx-auto py-6">
@@ -126,7 +136,7 @@ export default function ProfileMaker() {
           </Button>
           <Select
             value={template}
-            onValueChange={(value) => setTemplate(value)}
+            onValueChange={handleTemplateChange}
           >
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Select template" />
@@ -150,6 +160,12 @@ export default function ProfileMaker() {
                   ))}
                 </>
               )}
+
+              {/* Edit Templates option */}
+              <SelectItem value="divider2" disabled>
+                ──────────────
+              </SelectItem>
+              <SelectItem value="edit_templates">Edit Templates</SelectItem>
             </SelectContent>
           </Select>
         </div>
