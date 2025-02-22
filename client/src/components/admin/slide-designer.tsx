@@ -183,89 +183,7 @@ export default function SlideDesigner({
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Background and Grid Controls */}
-      <div className="flex items-center gap-4">
-        <Button
-          variant="outline"
-          onClick={() => setImageSelector({ open: true, type: "background" })}
-          className="flex items-center gap-2"
-        >
-          <Image className="w-4 h-4" />
-          {backgroundImage ? "Change Background" : "Set Background"}
-        </Button>
-        <Button
-          variant="outline"
-          onClick={() => setShowGrid(!showGrid)}
-          className="flex items-center gap-2"
-        >
-          <Grid className="w-4 h-4" />
-          {showGrid ? "Hide Grid" : "Show Grid"}
-        </Button>
-      </div>
-
-      {/* Slide Preview */}
-      <Card
-        className="w-[1920px] h-[1080px] relative bg-white mb-8"
-        style={{
-          transform: "scale(0.4)",
-          transformOrigin: "top left",
-          marginBottom: '-35%',
-          backgroundImage: backgroundImage ? `url(${backgroundImage})` : undefined,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        }}
-      >
-        {/* Grid Overlay */}
-        {showGrid && (
-          <div
-            className="absolute inset-0"
-            style={{
-              backgroundImage: `
-                linear-gradient(to right, rgba(0,0,0,0.1) 1px, transparent 1px),
-                linear-gradient(to bottom, rgba(0,0,0,0.1) 1px, transparent 1px)
-              `,
-              backgroundSize: '50px 50px',
-              pointerEvents: 'none',
-            }}
-          />
-        )}
-
-        {/* Elements */}
-        {elements.map((element) => (
-          <DraggableElement
-            key={element.id}
-            defaultPosition={{ x: element.position.x, y: element.position.y }}
-            onPositionChange={(pos) => handlePositionChange(element, pos)}
-            className={`absolute ${
-              selectedElement?.id === element.id ? 'ring-2 ring-primary' : ''
-            }`}
-          >
-            <div
-              className="w-full h-full"
-              style={{
-                width: element.position.width,
-                height: element.position.height,
-                ...element.properties,
-                border: element.elementType === "container" ? "2px dashed #e2e8f0" : undefined,
-              }}
-              onClick={() => setSelectedElement(element)}
-            >
-              {element.elementType === "image" ? (
-                <img
-                  src={element.content}
-                  alt="Element"
-                  className="w-full h-full object-cover"
-                  style={{ borderRadius: element.properties.borderRadius }}
-                />
-              ) : (
-                element.content
-              )}
-            </div>
-          </DraggableElement>
-        ))}
-      </Card>
-
-      {/* Element Controls */}
+      {/* Add New Element Section - Now at the top */}
       <Card className="p-4">
         <div className="space-y-4">
           <h3 className="text-lg font-semibold">Add New Element</h3>
@@ -547,6 +465,88 @@ export default function SlideDesigner({
             Add Element
           </Button>
         </div>
+      </Card>
+
+      {/* Background and Grid Controls */}
+      <div className="flex items-center gap-4">
+        <Button
+          variant="outline"
+          onClick={() => setImageSelector({ open: true, type: "background" })}
+          className="flex items-center gap-2"
+        >
+          <Image className="w-4 h-4" />
+          {backgroundImage ? "Change Background" : "Set Background"}
+        </Button>
+        <Button
+          variant="outline"
+          onClick={() => setShowGrid(!showGrid)}
+          className="flex items-center gap-2"
+        >
+          <Grid className="w-4 h-4" />
+          {showGrid ? "Hide Grid" : "Show Grid"}
+        </Button>
+      </div>
+
+      {/* Slide Preview - Now at the bottom */}
+      <Card
+        className="w-[1920px] h-[1080px] relative bg-white mb-8"
+        style={{
+          transform: "scale(0.4)",
+          transformOrigin: "top left",
+          marginBottom: '-35%',
+          backgroundImage: backgroundImage ? `url(${backgroundImage})` : undefined,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      >
+        {/* Grid Overlay */}
+        {showGrid && (
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage: `
+                linear-gradient(to right, rgba(0,0,0,0.1) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(0,0,0,0.1) 1px, transparent 1px)
+              `,
+              backgroundSize: '50px 50px',
+              pointerEvents: 'none',
+            }}
+          />
+        )}
+
+        {/* Elements */}
+        {elements.map((element) => (
+          <DraggableElement
+            key={element.id}
+            defaultPosition={{ x: element.position.x, y: element.position.y }}
+            onPositionChange={(pos) => handlePositionChange(element, pos)}
+            className={`absolute ${
+              selectedElement?.id === element.id ? 'ring-2 ring-primary' : ''
+            }`}
+          >
+            <div
+              className="w-full h-full"
+              style={{
+                width: element.position.width,
+                height: element.position.height,
+                ...element.properties,
+                border: element.elementType === "container" ? "2px dashed #e2e8f0" : undefined,
+              }}
+              onClick={() => setSelectedElement(element)}
+            >
+              {element.elementType === "image" ? (
+                <img
+                  src={element.content}
+                  alt="Element"
+                  className="w-full h-full object-cover"
+                  style={{ borderRadius: element.properties.borderRadius }}
+                />
+              ) : (
+                element.content
+              )}
+            </div>
+          </DraggableElement>
+        ))}
       </Card>
 
       <ImageSelector
