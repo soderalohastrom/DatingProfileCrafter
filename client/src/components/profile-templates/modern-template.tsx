@@ -1,7 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { type Profile } from "@shared/schema";
-import { Briefcase, GraduationCap, Heart, MapPin, Camera } from "lucide-react";
+import { Briefcase, GraduationCap, Heart, MapPin } from "lucide-react";
 import { useState } from "react";
 import ImageSelector from "../image-selector";
 import { Textarea } from "@/components/ui/textarea";
@@ -13,7 +12,7 @@ interface ModernTemplateProps {
   onUpdateMatchmakerTake?: (text: string) => void;
 }
 
-// Common slide wrapper component
+// Common slide wrapper component - defined before use
 const SlideWrapper = ({ children, id }: { children: React.ReactNode; id: string }) => (
   <Card 
     className="w-[1920px] h-[1080px] mx-auto mb-8 slide-page overflow-hidden" 
@@ -34,7 +33,12 @@ export default function ModernTemplate({
   onUpdatePhoto,
   onUpdateMatchmakerTake 
 }: ModernTemplateProps) {
-  const [imageSelector, setImageSelector] = useState<"main" | "bio" | "matchmaker" | null>(null);
+  const [imageSelector, setImageSelector] = useState<{
+    open: boolean;
+    type: "main" | "bio" | "matchmaker" | null;
+    context?: 'headshot' | 'lifestyle' | 'formal';
+  }>({ open: false, type: null });
+
   const [matchmakerTake, setMatchmakerTake] = useState("");
   const [imagePositions, setImagePositions] = useState({
     main: { x: 0, y: 0, scale: 1 },
@@ -48,15 +52,38 @@ export default function ModernTemplate({
     }
   };
 
+  // Get image context based on where it's being used
+  const getImageContext = (type: "main" | "bio" | "matchmaker"): 'headshot' | 'lifestyle' | 'formal' => {
+    switch (type) {
+      case "main":
+        return 'headshot';
+      case "bio":
+        return 'lifestyle';
+      case "matchmaker":
+        return 'formal';
+      default:
+        return 'headshot';
+    }
+  };
+
+  // Update click handlers to include context
+  const handleImageClick = (type: "main" | "bio" | "matchmaker") => {
+    setImageSelector({ 
+      open: true, 
+      type,
+      context: getImageContext(type)
+    });
+  };
+
   // Slide 1: Main Profile
   const MainProfileSlide = (
     <SlideWrapper id="slide-1">
       <div className="h-full flex flex-col">
         <div className="bg-gradient-to-r from-primary/10 to-primary/5 p-16">
           <div className="flex gap-16 items-start">
-            <div className="relative" onClick={() => setImageSelector("main")}>
+            <div className="relative" onClick={() => handleImageClick("main")}>
               <ImageCropper
-                src={profile.photoUrl}
+                src={profile.photoUrl || ''}
                 placeholderClassName="w-[300px] h-[300px] rounded-full border-4 border-white shadow-lg cursor-pointer hover:opacity-90 transition-opacity"
                 onPositionChange={(pos) => setImagePositions(prev => ({ ...prev, main: pos }))}
               />
@@ -113,9 +140,9 @@ export default function ModernTemplate({
           <p className="text-2xl text-muted-foreground whitespace-pre-wrap">{profile.bio}</p>
         </div>
         <div className="flex items-center justify-center bg-gradient-to-br from-primary/5 to-primary/10">
-          <div className="relative" onClick={() => setImageSelector("bio")}>
+          <div className="relative" onClick={() => handleImageClick("bio")}>
             <ImageCropper
-              src={profile.photoUrl}
+              src={profile.photoUrl || ''}
               placeholderClassName="w-[400px] h-[400px] rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
               onPositionChange={(pos) => setImagePositions(prev => ({ ...prev, bio: pos }))}
             />
@@ -131,10 +158,10 @@ export default function ModernTemplate({
       <div className="h-full grid" style={{ gridTemplateColumns: '1fr 3fr' }}>
         <div 
           className="relative cursor-pointer"
-          onClick={() => setImageSelector("matchmaker")}
+          onClick={() => handleImageClick("matchmaker")}
         >
           <ImageCropper
-            src={profile.photoUrl}
+            src={profile.photoUrl || ''}
             placeholderClassName="w-full h-full"
             aspectRatio={9/16}
             onPositionChange={(pos) => setImagePositions(prev => ({ ...prev, matchmaker: pos }))}
@@ -167,9 +194,10 @@ export default function ModernTemplate({
       </div>
 
       <ImageSelector
-        open={imageSelector !== null}
-        onOpenChange={(open) => !open && setImageSelector(null)}
+        open={imageSelector.open}
+        onOpenChange={(open) => !open && setImageSelector({ open: false, type: null })}
         onSelect={handleImageSelect}
+        context={imageSelector.context}
       />
     </>
   );

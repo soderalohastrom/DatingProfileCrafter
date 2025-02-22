@@ -5,9 +5,16 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Image, Upload } from "lucide-react";
+import { Image } from "lucide-react";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface ImageData {
   url: string;
@@ -20,29 +27,34 @@ interface ImageSelectorProps {
   onOpenChange: (open: boolean) => void;
   onSelect: (url: string) => void;
   directory?: string;
+  context?: 'headshot' | 'lifestyle' | 'formal' | 'background';
 }
 
 export default function ImageSelector({ 
   open, 
   onOpenChange, 
   onSelect,
-  directory
+  directory,
+  context = 'headshot'
 }: ImageSelectorProps) {
-  const [uploading, setUploading] = useState(false);
-  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<'headshot' | 'lifestyle' | 'formal'>(
+    context === 'background' ? 'headshot' : context as 'headshot' | 'lifestyle' | 'formal'
+  );
 
-  // Format directory path for API
-  const formattedDirectory = directory?.replace('@/', '');
+  // Format directory path for API based on context
+  const getDirectoryPath = () => {
+    if (directory) return directory;
+    return `assets/sample-images/${selectedCategory}`;
+  };
 
-  // Fetch images from the server, including directory parameter if provided
+  // Fetch images from the server
   const { data: images = [], error, isLoading } = useQuery<ImageData[]>({
-    queryKey: ['images', formattedDirectory],
+    queryKey: ['images', getDirectoryPath()],
     queryFn: async () => {
       const params = new URLSearchParams();
-      if (formattedDirectory) {
-        params.append('directory', formattedDirectory);
-        console.log('Fetching images from directory:', formattedDirectory);
-      }
+      const dirPath = getDirectoryPath();
+      params.append('directory', dirPath);
+      console.log('Fetching images from directory:', dirPath);
 
       const response = await fetch(`/api/upload?${params.toString()}`);
       if (!response.ok) {
@@ -54,69 +66,33 @@ export default function ImageSelector({
     }
   });
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    setUploading(true);
-    setUploadError(null);
-
-    const formData = new FormData();
-    formData.append("image", file);
-    if (formattedDirectory) formData.append("directory", formattedDirectory);
-
-    try {
-      const response = await fetch("/api/upload", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!response.ok) {
-        throw new Error("Upload failed");
-      }
-
-      const data = await response.json();
-      onSelect(data.url);
-      onOpenChange(false);
-    } catch (error) {
-      setUploadError("Failed to upload image. Please try again.");
-    } finally {
-      setUploading(false);
-    }
-  };
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[800px]">
         <DialogHeader>
           <DialogTitle>
-            {formattedDirectory?.includes('backgrounds') ? "Select Background Image" : "Select Profile Image"}
+            {directory?.includes('backgrounds') ? "Select Background Image" : "Select Profile Image"}
           </DialogTitle>
         </DialogHeader>
 
-        {/* Upload Section */}
-        <div className="p-4 border-b">
-          <Button
-            variant="outline"
-            className="w-full h-24 relative"
-            disabled={uploading}
-          >
-            <input
-              type="file"
-              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-              accept="image/jpeg,image/png,image/webp"
-              onChange={handleFileUpload}
-              disabled={uploading}
-            />
-            <div className="flex flex-col items-center gap-2">
-              <Upload className="w-8 h-8" />
-              <span>{uploading ? "Uploading..." : "Upload New Image"}</span>
-            </div>
-          </Button>
-          {uploadError && (
-            <p className="text-sm text-red-500 mt-2">{uploadError}</p>
-          )}
-        </div>
+        {/* Category Selector - Only show for profile images */}
+        {!directory && (
+          <div className="p-4 border-b">
+            <Select
+              value={selectedCategory}
+              onValueChange={(value: 'headshot' | 'lifestyle' | 'formal') => setSelectedCategory(value)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select image category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="headshot">Professional Headshots</SelectItem>
+                <SelectItem value="lifestyle">Lifestyle Photos</SelectItem>
+                <SelectItem value="formal">Formal Portraits</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        )}
 
         {/* Loading State */}
         {isLoading && (
@@ -128,7 +104,7 @@ export default function ImageSelector({
         {/* Error State */}
         {error && (
           <div className="text-center py-8 text-red-500">
-            Error loading images: {error.message}
+            Error loading images: {error instanceof Error ? error.message : 'Unknown error'}
           </div>
         )}
 
@@ -158,7 +134,7 @@ export default function ImageSelector({
           ))}
           {!isLoading && !error && images.length === 0 && (
             <div className="col-span-3 text-center py-8 text-muted-foreground">
-              No images found in directory: {formattedDirectory}
+              No images found in category: {selectedCategory}
             </div>
           )}
         </div>
