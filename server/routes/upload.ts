@@ -66,7 +66,10 @@ function getImagesFromDirectory(directory: string, urlPrefix: string) {
     return [];
   }
 
-  return fs.readdirSync(directory)
+  const files = fs.readdirSync(directory);
+  console.log(`Files found in ${directory}:`, files);
+
+  return files
     .filter(file => /\.(jpg|jpeg|png|webp)$/i.test(file))
     .map(filename => ({
       url: `${urlPrefix}/${filename}`,
@@ -103,18 +106,25 @@ router.get("/", (req, res) => {
     console.log('Requested directory:', directory);
 
     let images = [];
+    let targetDir: string;
+    let urlPrefix: string;
 
-    if (directory?.startsWith('assets/')) {
-      // Handle assets directory
-      const assetPath = path.join(assetsDir, directory.replace('assets/', ''));
-      console.log('Looking in assets directory:', assetPath);
-      images = getImagesFromDirectory(assetPath, `/src/${directory}`);
+    if (directory.startsWith('client/src/assets/')) {
+      // Handle assets directory (sample images)
+      targetDir = path.join(process.cwd(), directory);
+      // For assets, use the src path for URLs
+      urlPrefix = `/src/${directory.replace('client/src/', '')}`;
+      console.log('Looking in assets directory:', targetDir);
+      console.log('URL prefix:', urlPrefix);
     } else {
       // Handle uploaded images
-      images = getImagesFromDirectory(profileImagesDir, '/uploads/profile-images');
+      targetDir = profileImagesDir;
+      urlPrefix = '/uploads/profile-images';
     }
 
+    images = getImagesFromDirectory(targetDir, urlPrefix);
     console.log('Found images:', images);
+
     res.json(images);
   } catch (error) {
     console.error('Error listing images:', error);
