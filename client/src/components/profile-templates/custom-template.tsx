@@ -9,7 +9,7 @@ import { useState } from "react";
 interface CustomTemplateProps {
   profile: Partial<Profile>;
   theme: Theme;
-  onUpdatePhoto?: (url: string) => void;
+  onUpdatePhoto?: (url: string, elementId: number) => void;
   onUpdateMatchmakerTake?: (text: string) => void;
 }
 
@@ -47,8 +47,8 @@ export default function CustomTemplate({
 }: CustomTemplateProps) {
   const [imageSelector, setImageSelector] = useState<{
     open: boolean;
-    type: "placeholder" | null;
-  }>({ open: false, type: null });
+    elementId: number | null;
+  }>({ open: false, elementId: null });
 
   const [imagePositions, setImagePositions] = useState<Record<number, { x: number; y: number; scale: number }>>({});
 
@@ -61,21 +61,21 @@ export default function CustomTemplate({
   });
 
   const handleImageSelect = (url: string) => {
-    if (onUpdatePhoto && imageSelector.type === "placeholder") {
-      onUpdatePhoto(url);
+    if (onUpdatePhoto && imageSelector.elementId !== null) {
+      onUpdatePhoto(url, imageSelector.elementId);
     }
-    setImageSelector({ open: false, type: null });
+    setImageSelector({ open: false, elementId: null });
   };
 
   // Render an image element based on its properties
   const renderImageElement = (element: SlideElement) => {
-    const isPlaceholder = element.properties.isPlaceholder;
-    const hasImage = profile.photoUrl && !isPlaceholder;
+    const elementImage = profile.images?.[element.id];
+    const hasImage = elementImage && element.properties.isPlaceholder;
 
     if (hasImage) {
       return (
         <ImageCropper
-          src={profile.photoUrl}
+          src={elementImage}
           placeholderClassName="w-full h-full"
           style={{ borderRadius: element.properties.borderRadius }}
           position={imagePositions[element.id] || { x: 0, y: 0, scale: 1 }}
@@ -93,7 +93,7 @@ export default function CustomTemplate({
     return (
       <div
         className="w-full h-full bg-muted flex items-center justify-center border-2 border-dashed border-muted-foreground cursor-pointer"
-        onClick={() => setImageSelector({ open: true, type: "placeholder" })}
+        onClick={() => setImageSelector({ open: true, elementId: element.id })}
         style={{ borderRadius: element.properties.borderRadius }}
       >
         <div className="text-center">
@@ -153,7 +153,7 @@ export default function CustomTemplate({
 
       <ImageSelector
         open={imageSelector.open}
-        onOpenChange={(open) => !open && setImageSelector({ open: false, type: null })}
+        onOpenChange={(open) => !open && setImageSelector({ open: false, elementId: null })}
         onSelect={handleImageSelect}
       />
     </>

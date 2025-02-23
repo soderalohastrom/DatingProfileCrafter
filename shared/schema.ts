@@ -11,7 +11,10 @@ export const profiles = pgTable("profiles", {
   education: text("education").notNull(),
   interests: text("interests").notNull(),
   bio: text("bio").notNull(),
-  photoUrl: text("photo_url").notNull(),
+  mainPhotoUrl: text("main_photo_url"),
+  bioPhotoUrl: text("bio_photo_url"),
+  matchmakerPhotoUrl: text("matchmaker_photo_url"),
+  images: jsonb("images").$type<Record<number, string>>(),
 });
 
 export const templateThemes = pgTable("template_themes", {
@@ -44,6 +47,9 @@ export const slideElements = pgTable("slide_elements", {
     backgroundColor?: string;
     padding?: string;
     borderRadius?: string;
+    isPlaceholder?: boolean;
+    name?: string;
+    label?: string;
   }>().notNull(),
   content: text("content"), 
 });

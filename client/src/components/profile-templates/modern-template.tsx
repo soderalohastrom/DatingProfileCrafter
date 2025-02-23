@@ -8,7 +8,7 @@ import ImageCropper from "../image-cropper";
 
 interface ModernTemplateProps {
   profile: Partial<Profile>;
-  onUpdatePhoto?: (url: string) => void;
+  onUpdatePhoto?: (url: string, type: "main" | "bio" | "matchmaker") => void;
   onUpdateMatchmakerTake?: (text: string) => void;
 }
 
@@ -48,7 +48,7 @@ export default function ModernTemplate({
 
   const handleImageSelect = (url: string) => {
     if (onUpdatePhoto && imageSelector.type) {
-      onUpdatePhoto(url);
+      onUpdatePhoto(url, imageSelector.type);
     }
     setImageSelector({ open: false, type: null });
   };
@@ -67,6 +67,20 @@ export default function ModernTemplate({
     }
   };
 
+  // Get the appropriate image URL based on type
+  const getImageUrl = (type: "main" | "bio" | "matchmaker"): string | undefined => {
+    switch (type) {
+      case "main":
+        return profile.mainPhotoUrl;
+      case "bio":
+        return profile.bioPhotoUrl;
+      case "matchmaker":
+        return profile.matchmakerPhotoUrl;
+      default:
+        return undefined;
+    }
+  };
+
   // Update click handlers to include context
   const handleImageClick = (type: "main" | "bio" | "matchmaker") => {
     setImageSelector({ 
@@ -80,12 +94,12 @@ export default function ModernTemplate({
   const ImagePlaceholder = ({ 
     onClick, 
     className = "",
-    imageUrl = "",
+    type,
     aspectRatio = 1
   }: { 
     onClick: () => void, 
     className?: string,
-    imageUrl?: string,
+    type: "main" | "bio" | "matchmaker",
     aspectRatio?: number
   }) => (
     <div 
@@ -93,14 +107,15 @@ export default function ModernTemplate({
       onClick={onClick}
       style={{ aspectRatio }}
     >
-      {imageUrl ? (
+      {getImageUrl(type) ? (
         <ImageCropper
-          src={imageUrl}
+          src={getImageUrl(type)!}
           placeholderClassName="w-full h-full"
           aspectRatio={aspectRatio}
+          position={imagePositions[type]}
           onPositionChange={(pos) => setImagePositions(prev => ({ 
             ...prev, 
-            [imageSelector.type || 'main']: pos 
+            [type]: pos 
           }))}
         />
       ) : (
@@ -123,7 +138,7 @@ export default function ModernTemplate({
             <ImagePlaceholder
               onClick={() => handleImageClick("main")}
               className="w-[300px] h-[300px] rounded-full border-4 border-white shadow-lg hover:opacity-90 transition-opacity"
-              imageUrl={profile.photoUrl}
+              type="main"
             />
             <div>
               <h2 className="text-7xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
@@ -180,7 +195,7 @@ export default function ModernTemplate({
           <ImagePlaceholder
             onClick={() => handleImageClick("bio")}
             className="w-[400px] h-[400px] rounded-lg hover:opacity-90 transition-opacity"
-            imageUrl={profile.photoUrl}
+            type="bio"
           />
         </div>
       </div>
@@ -194,7 +209,7 @@ export default function ModernTemplate({
         <ImagePlaceholder
           onClick={() => handleImageClick("matchmaker")}
           className="w-full h-full"
-          imageUrl={profile.photoUrl}
+          type="matchmaker"
           aspectRatio={9/16}
         />
         <div className="p-16 space-y-8">
