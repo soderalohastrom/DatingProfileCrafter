@@ -1,6 +1,9 @@
 import { type Profile, type Theme, type SlideElement } from "@shared/schema";
 import { useQuery } from "@tanstack/react-query";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Image } from "lucide-react";
+import ImageSelector from "../image-selector";
+import { useState } from "react";
 
 interface CustomTemplateProps {
   profile: Partial<Profile>;
@@ -40,8 +43,12 @@ export default function CustomTemplate({
   profile,
   theme,
   onUpdatePhoto,
-  onUpdateMatchmakerTake,
 }: CustomTemplateProps) {
+  const [imageSelector, setImageSelector] = useState<{
+    open: boolean;
+    type: "placeholder" | null;
+  }>({ open: false, type: null });
+
   // Fetch elements for all slides
   const slideElements = [1, 2, 3].map(slideNumber => {
     const { data: elements = [] } = useQuery<SlideElement[]>({
@@ -50,55 +57,96 @@ export default function CustomTemplate({
     return elements;
   });
 
-  return (
-    <Tabs defaultValue="slide1" className="w-full">
-      <TabsList className="hidden">
-        <TabsTrigger value="slide1">Slide 1</TabsTrigger>
-        <TabsTrigger value="slide2">Slide 2</TabsTrigger>
-        <TabsTrigger value="slide3">Slide 3</TabsTrigger>
-      </TabsList>
+  const handleImageSelect = (url: string) => {
+    if (onUpdatePhoto && imageSelector.type === "placeholder") {
+      onUpdatePhoto(url);
+    }
+    setImageSelector({ open: false, type: null });
+  };
 
-      {[1, 2, 3].map((slideNumber, index) => (
-        <TabsContent
-          key={slideNumber}
-          value={`slide${slideNumber}`}
-          className="w-[1920px] h-[1080px] relative"
-          style={{
-            backgroundImage: `url(${theme.backgroundImages[`slide${slideNumber}` as keyof Theme['backgroundImages']]})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-          }}
-        >
-          {slideElements[index].map((element) => (
-            <div
-              key={element.id}
-              className="absolute"
-              style={{
-                left: element.position.x,
-                top: element.position.y,
-                width: element.position.width,
-                height: element.position.height,
-                ...element.properties,
-              }}
-            >
-              {element.elementType === "image" ? (
-                <img
-                  src={element.content || ''}
-                  alt="Element"
-                  className="w-full h-full object-cover"
-                  style={{ borderRadius: element.properties.borderRadius }}
-                />
-              ) : element.elementType === "text" ? (
-                // Handle text elements with properties.name for custom fields
-                mapProfileToContent(element.content, profile, element.properties.name)
-              ) : (
-                // Handle freeform text elements directly
-                element.content
-              )}
-            </div>
-          ))}
-        </TabsContent>
-      ))}
-    </Tabs>
+  // Render an image element based on its properties
+  const renderImageElement = (element: SlideElement) => {
+    const isPlaceholder = element.properties.isPlaceholder;
+    const hasImage = profile.photoUrl && !isPlaceholder;
+
+    if (hasImage) {
+      return (
+        <img
+          src={profile.photoUrl}
+          alt="Profile"
+          className="w-full h-full object-cover"
+          style={{ borderRadius: element.properties.borderRadius }}
+        />
+      );
+    }
+
+    // Render placeholder that can be clicked
+    return (
+      <div
+        className="w-full h-full bg-muted flex items-center justify-center border-2 border-dashed border-muted-foreground cursor-pointer"
+        onClick={() => setImageSelector({ open: true, type: "placeholder" })}
+        style={{ borderRadius: element.properties.borderRadius }}
+      >
+        <div className="text-center">
+          <Image className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+          <p className="text-sm text-muted-foreground">Click to select image</p>
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <>
+      <Tabs defaultValue="slide1" className="w-full">
+        <TabsList className="hidden">
+          <TabsTrigger value="slide1">Slide 1</TabsTrigger>
+          <TabsTrigger value="slide2">Slide 2</TabsTrigger>
+          <TabsTrigger value="slide3">Slide 3</TabsTrigger>
+        </TabsList>
+
+        {[1, 2, 3].map((slideNumber, index) => (
+          <TabsContent
+            key={slideNumber}
+            value={`slide${slideNumber}`}
+            className="w-[1920px] h-[1080px] relative"
+            style={{
+              backgroundImage: theme.backgroundImages?.[`slide${slideNumber}` as keyof Theme['backgroundImages']] 
+                ? `url(${theme.backgroundImages[`slide${slideNumber}` as keyof Theme['backgroundImages']]})` 
+                : undefined,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+            }}
+          >
+            {slideElements[index].map((element) => (
+              <div
+                key={element.id}
+                className="absolute"
+                style={{
+                  left: element.position.x,
+                  top: element.position.y,
+                  width: element.position.width,
+                  height: element.position.height,
+                  ...element.properties,
+                }}
+              >
+                {element.elementType === "image" ? (
+                  renderImageElement(element)
+                ) : element.elementType === "text" ? (
+                  mapProfileToContent(element.content, profile, element.properties.name)
+                ) : (
+                  element.content
+                )}
+              </div>
+            ))}
+          </TabsContent>
+        ))}
+      </Tabs>
+
+      <ImageSelector
+        open={imageSelector.open}
+        onOpenChange={(open) => !open && setImageSelector({ open: false, type: null })}
+        onSelect={handleImageSelect}
+      />
+    </>
   );
 }

@@ -47,9 +47,10 @@ export default function ModernTemplate({
   });
 
   const handleImageSelect = (url: string) => {
-    if (onUpdatePhoto) {
+    if (onUpdatePhoto && imageSelector.type) {
       onUpdatePhoto(url);
     }
+    setImageSelector({ open: false, type: null });
   };
 
   // Get image context based on where it's being used
