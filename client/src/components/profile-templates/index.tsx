@@ -20,9 +20,17 @@ export default function ProfileTemplate({
   onUpdatePhoto,
   onUpdateMatchmakerTake 
 }: ProfileTemplateProps) {
+  console.log('ProfileTemplate render - Current profile:', profile);
+  console.log('Selected template:', template);
+
   const { data: themes = [] } = useQuery<Theme[]>({
     queryKey: ["/api/admin/themes"],
   });
+
+  const handlePhotoUpdate = (url: string, slideNumber: number) => {
+    console.log('handlePhotoUpdate called with:', { url, slideNumber });
+    onUpdatePhoto?.(url, slideNumber);
+  };
 
   // Handle custom templates - temporarily disabled
   if (false && typeof template === 'string' && template.startsWith('custom_')) {
@@ -34,7 +42,7 @@ export default function ProfileTemplate({
         <CustomTemplate 
           profile={profile} 
           theme={customTheme}
-          onUpdatePhoto={onUpdatePhoto}
+          onUpdatePhoto={handlePhotoUpdate}
           onUpdateMatchmakerTake={onUpdateMatchmakerTake}
         />
       );
@@ -44,12 +52,12 @@ export default function ProfileTemplate({
   // Handle built-in templates with consistent slide-based image handling
   switch (template) {
     case "modern":
-      return <ModernTemplate profile={profile} onUpdatePhoto={onUpdatePhoto} onUpdateMatchmakerTake={onUpdateMatchmakerTake} />;
+      return <ModernTemplate profile={profile} onUpdatePhoto={handlePhotoUpdate} onUpdateMatchmakerTake={onUpdateMatchmakerTake} />;
     case "classic":
-      return <ClassicTemplate profile={profile} onUpdatePhoto={onUpdatePhoto} onUpdateMatchmakerTake={onUpdateMatchmakerTake} />;
+      return <ClassicTemplate profile={profile} onUpdatePhoto={handlePhotoUpdate} onUpdateMatchmakerTake={onUpdateMatchmakerTake} />;
     case "minimal":
-      return <MinimalTemplate profile={profile} onUpdatePhoto={onUpdatePhoto} onUpdateMatchmakerTake={onUpdateMatchmakerTake} />;
+      return <MinimalTemplate profile={profile} onUpdatePhoto={handlePhotoUpdate} onUpdateMatchmakerTake={onUpdateMatchmakerTake} />;
     default:
-      return <ModernTemplate profile={profile} onUpdatePhoto={onUpdatePhoto} onUpdateMatchmakerTake={onUpdateMatchmakerTake} />;
+      return <ModernTemplate profile={profile} onUpdatePhoto={handlePhotoUpdate} onUpdateMatchmakerTake={onUpdateMatchmakerTake} />;
   }
 }

@@ -15,8 +15,6 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect } from "react";
 import { triggerConfetti } from "@/lib/utils";
-import { useQuery } from "@tanstack/react-query";
-import type { SlideElement } from "@shared/schema";
 
 interface ProfileFormProps {
   profile: Partial<Profile>;
@@ -27,6 +25,8 @@ interface ProfileFormProps {
 
 export default function ProfileForm({ profile, onChange, templateId, isBuiltInTemplate }: ProfileFormProps) {
   const { toast } = useToast();
+
+  console.log('ProfileForm render - Current profile:', profile);
 
   const form = useForm<InsertProfile>({
     resolver: zodResolver(insertProfileSchema),
@@ -42,12 +42,12 @@ export default function ProfileForm({ profile, onChange, templateId, isBuiltInTe
       slide2PhotoUrl: profile.slide2PhotoUrl || "",
       slide3PhotoUrl: profile.slide3PhotoUrl || "",
       slideImagePositions: profile.slideImagePositions || null,
-      //removed photoUrl
     },
   });
 
   // Reset form when profile changes
   useEffect(() => {
+    console.log('ProfileForm useEffect - Updating form with new profile:', profile);
     form.reset({
       firstName: profile.firstName || "",
       age: profile.age || 18,
@@ -60,9 +60,13 @@ export default function ProfileForm({ profile, onChange, templateId, isBuiltInTe
       slide2PhotoUrl: profile.slide2PhotoUrl || "",
       slide3PhotoUrl: profile.slide3PhotoUrl || "",
       slideImagePositions: profile.slideImagePositions || null,
-      //removed photoUrl
     });
   }, [profile, form.reset]);
+
+  const handleChange = (updatedProfile: Partial<Profile>) => {
+    console.log('ProfileForm handleChange - Updating profile:', updatedProfile);
+    onChange(updatedProfile);
+  };
 
   const onSubmit = async (data: InsertProfile) => {
     try {
@@ -106,7 +110,7 @@ export default function ProfileForm({ profile, onChange, templateId, isBuiltInTe
                   <FormControl>
                     <Input {...field} onChange={(e) => {
                       field.onChange(e);
-                      onChange({ ...profile, firstName: e.target.value });
+                      handleChange({ ...profile, firstName: e.target.value });
                     }} />
                   </FormControl>
                   <FormMessage />
@@ -127,7 +131,7 @@ export default function ProfileForm({ profile, onChange, templateId, isBuiltInTe
                       onChange={(e) => {
                         const value = parseInt(e.target.value);
                         field.onChange(value);
-                        onChange({ ...profile, age: value });
+                        handleChange({ ...profile, age: value });
                       }}
                       min={18}
                       max={120}
@@ -147,7 +151,7 @@ export default function ProfileForm({ profile, onChange, templateId, isBuiltInTe
                   <FormControl>
                     <Input {...field} onChange={(e) => {
                       field.onChange(e);
-                      onChange({ ...profile, location: e.target.value });
+                      handleChange({ ...profile, location: e.target.value });
                     }} />
                   </FormControl>
                   <FormMessage />
@@ -164,7 +168,7 @@ export default function ProfileForm({ profile, onChange, templateId, isBuiltInTe
                   <FormControl>
                     <Input {...field} onChange={(e) => {
                       field.onChange(e);
-                      onChange({ ...profile, occupation: e.target.value });
+                      handleChange({ ...profile, occupation: e.target.value });
                     }} />
                   </FormControl>
                   <FormMessage />
@@ -181,7 +185,7 @@ export default function ProfileForm({ profile, onChange, templateId, isBuiltInTe
                   <FormControl>
                     <Input {...field} onChange={(e) => {
                       field.onChange(e);
-                      onChange({ ...profile, education: e.target.value });
+                      handleChange({ ...profile, education: e.target.value });
                     }} />
                   </FormControl>
                   <FormMessage />
@@ -198,7 +202,7 @@ export default function ProfileForm({ profile, onChange, templateId, isBuiltInTe
                   <FormControl>
                     <Textarea {...field} onChange={(e) => {
                       field.onChange(e);
-                      onChange({ ...profile, interests: e.target.value });
+                      handleChange({ ...profile, interests: e.target.value });
                     }} />
                   </FormControl>
                   <FormMessage />
@@ -215,7 +219,7 @@ export default function ProfileForm({ profile, onChange, templateId, isBuiltInTe
                   <FormControl>
                     <Textarea {...field} onChange={(e) => {
                       field.onChange(e);
-                      onChange({ ...profile, bio: e.target.value });
+                      handleChange({ ...profile, bio: e.target.value });
                     }} />
                   </FormControl>
                   <FormMessage />
