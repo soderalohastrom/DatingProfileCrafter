@@ -120,25 +120,29 @@ export default function ImageCropper({
       style={{ aspectRatio }}
       onClick={handleContainerClick}
     >
-      {/* Position mode toggle button */}
+      {/* Position mode toggle button - always at top-left */}
       {src && (
-      <Button
-        size="icon"
-        variant={isPositionMode ? "secondary" : "ghost"}
-        className={cn(
-          "absolute top-2 right-2 z-30 opacity-0 group-hover:opacity-100 transition-opacity"
-        )}
-        onClick={(e) => {
-          e.stopPropagation();
-          setIsPositionMode(!isPositionMode);
-        }}
-      >
-        {isPositionMode ? (
-          <Check className="h-4 w-4 text-green-500" />
-        ) : (
-          <Move className="h-4 w-4" />
-        )}
-      </Button>
+        <div className="absolute inset-0 z-30">
+          <Button
+            size="icon"
+            variant={isPositionMode ? "secondary" : "ghost"}
+            className={cn(
+              "absolute left-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity",
+              "bg-white/90 hover:bg-white shadow-md",
+              isPositionMode && "ring-2 ring-primary"
+            )}
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsPositionMode(!isPositionMode);
+            }}
+          >
+            {isPositionMode ? (
+              <Check className="h-4 w-4 text-green-500" />
+            ) : (
+              <Move className="h-4 w-4 text-primary" />
+            )}
+          </Button>
+        </div>
       )}
 
       {/* Semi-transparent overlay for masked areas */}
