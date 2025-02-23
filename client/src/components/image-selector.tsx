@@ -6,6 +6,13 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Image } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
@@ -30,10 +37,12 @@ export default function ImageSelector({
   directory,
   slideNumber
 }: ImageSelectorProps) {
+  const [selectedCategory, setSelectedCategory] = useState<'headshot' | 'lifestyle' | 'formal'>('headshot');
+
   // Format directory path for API based on context
   const getDirectoryPath = () => {
     if (directory) return directory;
-    return `assets/sample-images/profile`;
+    return `@/assets/sample-images/${selectedCategory}`;
   };
 
   // Fetch images from the server
@@ -43,12 +52,15 @@ export default function ImageSelector({
       const params = new URLSearchParams();
       const dirPath = getDirectoryPath();
       params.append('directory', dirPath);
+      console.log('Fetching images from directory:', dirPath);
 
       const response = await fetch(`/api/upload?${params.toString()}`);
       if (!response.ok) {
         throw new Error('Failed to fetch images');
       }
-      return await response.json();
+      const data = await response.json();
+      console.log('Received images:', data);
+      return data;
     }
   });
 
@@ -62,6 +74,25 @@ export default function ImageSelector({
               : `Select Image for Slide ${slideNumber}`}
           </DialogTitle>
         </DialogHeader>
+
+        {/* Category Selector - Only show for profile images */}
+        {!directory && (
+          <div className="p-4 border-b">
+            <Select
+              value={selectedCategory}
+              onValueChange={(value: 'headshot' | 'lifestyle' | 'formal') => setSelectedCategory(value)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select image category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="headshot">Professional Headshots</SelectItem>
+                <SelectItem value="lifestyle">Lifestyle Photos</SelectItem>
+                <SelectItem value="formal">Formal Portraits</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        )}
 
         {/* Loading State */}
         {isLoading && (
@@ -103,7 +134,7 @@ export default function ImageSelector({
           ))}
           {!isLoading && !error && images.length === 0 && (
             <div className="col-span-3 text-center py-8 text-muted-foreground">
-              No images found in directory
+              No images found in category: {selectedCategory}
             </div>
           )}
         </div>
