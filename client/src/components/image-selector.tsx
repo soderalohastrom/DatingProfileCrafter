@@ -37,7 +37,7 @@ export default function ImageSelector({
   directory,
   slideNumber
 }: ImageSelectorProps) {
-  const [selectedCategory, setSelectedCategory] = useState<'headshot' | 'lifestyle' | 'formal'>('headshot');
+  const [selectedCategory, setSelectedCategory] = useState<'headshots' | 'lifestyle' | 'formal'>('headshots');
 
   // Format directory path for API based on context
   const getDirectoryPath = () => {
@@ -81,13 +81,13 @@ export default function ImageSelector({
           <div className="p-4 border-b">
             <Select
               value={selectedCategory}
-              onValueChange={(value: 'headshot' | 'lifestyle' | 'formal') => setSelectedCategory(value)}
+              onValueChange={(value: 'headshots' | 'lifestyle' | 'formal') => setSelectedCategory(value)}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select image category" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="headshot">Professional Headshots</SelectItem>
+                <SelectItem value="headshots">Professional Headshots</SelectItem>
                 <SelectItem value="lifestyle">Lifestyle Photos</SelectItem>
                 <SelectItem value="formal">Formal Portraits</SelectItem>
               </SelectContent>
