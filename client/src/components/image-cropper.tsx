@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import Draggable from "react-draggable";
-import { GripVertical, Move } from "lucide-react";
+import { Move, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface Position {
@@ -114,26 +114,32 @@ export default function ImageCropper({
       className={cn(
         "relative overflow-hidden group",
         placeholderClassName,
-        !isPositionMode && "cursor-pointer"
+        !isPositionMode && "cursor-pointer hover:opacity-90",
+        isPositionMode && "cursor-move"
       )}
       style={{ aspectRatio }}
       onClick={handleContainerClick}
     >
       {/* Position mode toggle button */}
+      {src && (
       <Button
         size="icon"
-        variant="ghost"
+        variant={isPositionMode ? "secondary" : "ghost"}
         className={cn(
-          "absolute top-2 right-2 z-30 opacity-0 group-hover:opacity-100 transition-opacity",
-          isPositionMode && "bg-primary text-primary-foreground hover:bg-primary/90"
+          "absolute top-2 right-2 z-30 opacity-0 group-hover:opacity-100 transition-opacity"
         )}
         onClick={(e) => {
           e.stopPropagation();
           setIsPositionMode(!isPositionMode);
         }}
       >
-        {isPositionMode ? <GripVertical className="h-4 w-4" /> : <Move className="h-4 w-4" />}
+        {isPositionMode ? (
+          <Check className="h-4 w-4 text-green-500" />
+        ) : (
+          <Move className="h-4 w-4" />
+        )}
       </Button>
+      )}
 
       {/* Semi-transparent overlay for masked areas */}
       <div 
@@ -154,7 +160,6 @@ export default function ImageCropper({
         <div 
           className={cn(
             "absolute transition-all",
-            isPositionMode ? "cursor-move" : "cursor-pointer",
             isDragging && "shadow-lg"
           )}
           style={{
@@ -178,7 +183,7 @@ export default function ImageCropper({
           key={id}
           onMouseDown={(e) => handleGrabberMouseDown(e, id)}
           className={cn(
-            "absolute w-4 h-4 bg-white rounded-full z-20 shadow-md border-2 border-primary opacity-0 group-hover:opacity-100",
+            "absolute w-6 h-6 bg-white rounded-full z-20 shadow-md border-2 border-primary opacity-0 group-hover:opacity-100",
             "hover:scale-110 transition-transform",
             isResizing && "scale-110 shadow-lg opacity-100"
           )}
