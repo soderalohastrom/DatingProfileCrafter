@@ -72,7 +72,7 @@ assets/
 - Real-time profile updates
 - Secure data handling and validation
 
-### Technical Implementation Notes
+## Technical Implementation Notes
 
 #### Profile Loading Process
 1. URL Parameter Detection:
@@ -87,6 +87,49 @@ assets/
    - Form fields populate with profile data
    - Template updates in real-time
    - Changes sync between form and preview
+
+#### Known Issues and Solutions
+
+##### Image Mapping Across Templates
+Current Issue:
+- Images selected for specific slides are not maintaining their slide-specific positions across different templates
+- When selecting an image in one template's slide, it incorrectly appears in all slides of other templates
+- Image selection state is not properly preserved when switching between templates
+
+Root Causes:
+1. Template Component State Management:
+   - Each template component (Modern, Classic, Minimal) is not correctly accessing slide-specific image URLs
+   - The image position state is being shared incorrectly across templates
+
+2. Image Selection Flow:
+   ```typescript
+   // Current problematic flow
+   slideNumber -> selectedImage -> all templates showing same image
+
+   // Desired flow
+   slideNumber -> selectedImage -> specific slide in current template
+   ```
+
+Proposed Solutions:
+1. Template-Specific Image Mapping:
+   - Ensure each template component maintains its own mapping of images to slides
+   - Use dedicated state variables for each slide's image URL
+   ```typescript
+   slide1PhotoUrl -> Modern.Slide1, Classic.Slide1, Minimal.Slide1
+   slide2PhotoUrl -> Modern.Slide2, Classic.Slide2, Minimal.Slide2
+   slide3PhotoUrl -> Modern.Slide3, Classic.Slide3, Minimal.Slide3
+   ```
+
+2. Image Selection Handler Updates:
+   - Implement strict slide number validation
+   - Add template-specific image position tracking
+   - Ensure proper state updates when switching templates
+
+3. Template Component Refactoring:
+   - Create a shared base template class/interface
+   - Implement template-specific image handling
+   - Add proper cleanup when unmounting templates
+
 
 ## Technology Stack
 - Frontend: React/TypeScript
