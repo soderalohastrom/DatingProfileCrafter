@@ -14,24 +14,22 @@ interface ModernTemplateProps {
 
 // Common slide wrapper component
 const SlideWrapper = ({ children, id }: { children: React.ReactNode; id: string }) => (
-  <Card 
-    className="w-[1920px] h-[1080px] mx-auto mb-8 slide-page overflow-hidden" 
+  <Card
+    className="w-[1920px] h-[1080px] mx-auto mb-8 slide-page overflow-hidden"
     id={id}
-    style={{ 
-      aspectRatio: '16/9',
-      background: 'white'
+    style={{
+      aspectRatio: "16/9",
+      background: "white",
     }}
   >
-    <CardContent className="h-full p-0">
-      {children}
-    </CardContent>
+    <CardContent className="h-full p-0">{children}</CardContent>
   </Card>
 );
 
-export default function ModernTemplate({ 
-  profile, 
+export default function ModernTemplate({
+  profile,
   onUpdatePhoto,
-  onUpdateMatchmakerTake 
+  onUpdateMatchmakerTake,
 }: ModernTemplateProps) {
   const [imageSelector, setImageSelector] = useState<{
     open: boolean;
@@ -48,32 +46,49 @@ export default function ModernTemplate({
     setImageSelector({ open: false, slideNumber: null });
   };
 
-  // Slide 1: Main Profile
+  // Update the image placeholder component to use the new position mode
+  const ImagePlaceholder = ({
+    slideNumber,
+    className = "",
+    children,
+  }: {
+    slideNumber: number;
+    className?: string;
+    children?: React.ReactNode;
+  }) => (
+    <div className={className}>
+      {profile[`slide${slideNumber}PhotoUrl` as keyof Profile] ? (
+        <ImageCropper
+          src={profile[`slide${slideNumber}PhotoUrl` as keyof Profile] as string}
+          placeholderClassName="w-full h-full"
+          position={imagePositions[slideNumber] || { x: 0, y: 0, scale: 1 }}
+          onPositionChange={(pos) => setImagePositions((prev) => ({ ...prev, [slideNumber]: pos }))}
+          onClick={() => setImageSelector({ open: true, slideNumber })}
+        />
+      ) : (
+        <div
+          className="w-full h-full bg-muted flex items-center justify-center border-2 border-dashed border-muted-foreground cursor-pointer"
+          onClick={() => setImageSelector({ open: true, slideNumber })}
+        >
+          <div className="text-center">
+            <Image className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+            <p className="text-sm text-muted-foreground">Click to select image</p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
+  // Rest of the template code remains the same, but using the updated ImagePlaceholder component
   const MainProfileSlide = (
     <SlideWrapper id="slide-1">
       <div className="h-full flex flex-col">
         <div className="bg-gradient-to-r from-primary/10 to-primary/5 p-16">
           <div className="flex gap-16 items-start">
-            <div 
-              className="w-[300px] h-[300px] rounded-full border-4 border-white shadow-lg hover:opacity-90 transition-opacity overflow-hidden cursor-pointer"
-              onClick={() => setImageSelector({ open: true, slideNumber: 1 })}
-            >
-              {profile.slide1PhotoUrl ? (
-                <ImageCropper
-                  src={profile.slide1PhotoUrl}
-                  placeholderClassName="w-full h-full"
-                  position={imagePositions[1] || { x: 0, y: 0, scale: 1 }}
-                  onPositionChange={(pos) => setImagePositions(prev => ({ ...prev, 1: pos }))}
-                />
-              ) : (
-                <div className="w-full h-full bg-muted flex items-center justify-center border-2 border-dashed border-muted-foreground">
-                  <div className="text-center">
-                    <Image className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-                    <p className="text-sm text-muted-foreground">Click to select image</p>
-                  </div>
-                </div>
-              )}
-            </div>
+            <ImagePlaceholder
+              slideNumber={1}
+              className="w-[300px] h-[300px] rounded-full border-4 border-white shadow-lg overflow-hidden"
+            />
             <div>
               <h2 className="text-7xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
                 {profile.firstName}, {profile.age}
@@ -117,65 +132,24 @@ export default function ModernTemplate({
     </SlideWrapper>
   );
 
-  // Slide 2: Bio and Secondary Photo
   const BioSlide = (
     <SlideWrapper id="slide-2">
-      <div className="h-full grid" style={{ gridTemplateColumns: '3fr 1fr' }}>
+      <div className="h-full grid" style={{ gridTemplateColumns: "3fr 1fr" }}>
         <div className="p-16 space-y-8">
           <h3 className="text-5xl font-semibold">About Me</h3>
           <p className="text-2xl text-muted-foreground whitespace-pre-wrap">{profile.bio}</p>
         </div>
         <div className="flex items-center justify-center bg-gradient-to-br from-primary/5 to-primary/10">
-          <div 
-            className="w-[400px] h-[400px] rounded-lg hover:opacity-90 transition-opacity overflow-hidden cursor-pointer"
-            onClick={() => setImageSelector({ open: true, slideNumber: 2 })}
-          >
-            {profile.slide2PhotoUrl ? (
-              <ImageCropper
-                src={profile.slide2PhotoUrl}
-                placeholderClassName="w-full h-full"
-                position={imagePositions[2] || { x: 0, y: 0, scale: 1 }}
-                onPositionChange={(pos) => setImagePositions(prev => ({ ...prev, 2: pos }))}
-              />
-            ) : (
-              <div className="w-full h-full bg-muted flex items-center justify-center border-2 border-dashed border-muted-foreground">
-                <div className="text-center">
-                  <Image className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-                  <p className="text-sm text-muted-foreground">Click to select image</p>
-                </div>
-              </div>
-            )}
-          </div>
+          <ImagePlaceholder slideNumber={2} className="w-[400px] h-[400px] rounded-lg overflow-hidden" />
         </div>
       </div>
     </SlideWrapper>
   );
 
-  // Slide 3: Matchmaker's Take
   const MatchmakerSlide = (
     <SlideWrapper id="slide-3">
-      <div className="h-full grid" style={{ gridTemplateColumns: '1fr 3fr' }}>
-        <div 
-          className="w-full h-full cursor-pointer"
-          onClick={() => setImageSelector({ open: true, slideNumber: 3 })}
-        >
-          {profile.slide3PhotoUrl ? (
-            <ImageCropper
-              src={profile.slide3PhotoUrl}
-              placeholderClassName="w-full h-full"
-              aspectRatio={9/16}
-              position={imagePositions[3] || { x: 0, y: 0, scale: 1 }}
-              onPositionChange={(pos) => setImagePositions(prev => ({ ...prev, 3: pos }))}
-            />
-          ) : (
-            <div className="w-full h-full bg-muted flex items-center justify-center border-2 border-dashed border-muted-foreground">
-              <div className="text-center">
-                <Image className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-                <p className="text-sm text-muted-foreground">Click to select image</p>
-              </div>
-            </div>
-          )}
-        </div>
+      <div className="h-full grid" style={{ gridTemplateColumns: "1fr 3fr" }}>
+        <ImagePlaceholder slideNumber={3} className="w-full h-full" />
         <div className="p-16 space-y-8">
           <h3 className="text-5xl font-semibold">Matchmaker's Take</h3>
           <Textarea

@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import Draggable from "react-draggable";
+import { GripVertical, Move } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface Position {
   x: number;
@@ -14,6 +16,7 @@ interface ImageCropperProps {
   aspectRatio?: number;
   position?: Position;
   onPositionChange?: (position: Position) => void;
+  onClick?: () => void;
 }
 
 export default function ImageCropper({
@@ -21,7 +24,8 @@ export default function ImageCropper({
   placeholderClassName,
   aspectRatio = 1,
   position: initialPosition,
-  onPositionChange
+  onPositionChange,
+  onClick
 }: ImageCropperProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(initialPosition?.scale ?? 1);
@@ -32,6 +36,7 @@ export default function ImageCropper({
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
   const [initialGrab, setInitialGrab] = useState({ x: 0, y: 0, scale: 1 });
+  const [isPositionMode, setIsPositionMode] = useState(false);
 
   // Grabber positions with improved styling
   const grabbers = [
@@ -53,10 +58,18 @@ export default function ImageCropper({
   }, [position, scale, onPositionChange]);
 
   const handleDrag = (e: any, data: { x: number; y: number }) => {
+    if (!isPositionMode) return;
     setPosition({ x: data.x, y: data.y });
   };
 
+  const handleContainerClick = () => {
+    if (!isPositionMode && onClick) {
+      onClick();
+    }
+  };
+
   const handleGrabberMouseDown = (e: React.MouseEvent, grabberId: string) => {
+    if (!isPositionMode) return;
     e.stopPropagation();
     setIsResizing(true);
     setInitialGrab({
@@ -99,16 +112,34 @@ export default function ImageCropper({
     <div 
       ref={containerRef}
       className={cn(
-        "relative overflow-hidden",
-        placeholderClassName
+        "relative overflow-hidden group",
+        placeholderClassName,
+        !isPositionMode && "cursor-pointer"
       )}
       style={{ aspectRatio }}
+      onClick={handleContainerClick}
     >
+      {/* Position mode toggle button */}
+      <Button
+        size="icon"
+        variant="ghost"
+        className={cn(
+          "absolute top-2 right-2 z-30 opacity-0 group-hover:opacity-100 transition-opacity",
+          isPositionMode && "bg-primary text-primary-foreground hover:bg-primary/90"
+        )}
+        onClick={(e) => {
+          e.stopPropagation();
+          setIsPositionMode(!isPositionMode);
+        }}
+      >
+        {isPositionMode ? <GripVertical className="h-4 w-4" /> : <Move className="h-4 w-4" />}
+      </Button>
+
       {/* Semi-transparent overlay for masked areas */}
       <div 
         className="absolute inset-0 bg-black/20 pointer-events-none z-10"
         style={{
-          opacity: isDragging || isResizing ? 0.4 : 0.2,
+          opacity: (isDragging || isResizing) ? 0.4 : isPositionMode ? 0.2 : 0,
           transition: 'opacity 0.2s ease'
         }}
       />
@@ -116,12 +147,14 @@ export default function ImageCropper({
       <Draggable
         position={position}
         onDrag={handleDrag}
-        onStart={() => setIsDragging(true)}
+        onStart={() => isPositionMode && setIsDragging(true)}
         onStop={() => setIsDragging(false)}
+        disabled={!isPositionMode}
       >
         <div 
           className={cn(
-            "absolute cursor-move transition-all",
+            "absolute transition-all",
+            isPositionMode ? "cursor-move" : "cursor-pointer",
             isDragging && "shadow-lg"
           )}
           style={{
@@ -139,15 +172,15 @@ export default function ImageCropper({
         </div>
       </Draggable>
 
-      {/* Corner grabbers for resizing */}
-      {grabbers.map(({ id, style }) => (
+      {/* Corner grabbers for resizing - only shown in position mode */}
+      {isPositionMode && grabbers.map(({ id, style }) => (
         <div
           key={id}
           onMouseDown={(e) => handleGrabberMouseDown(e, id)}
           className={cn(
-            "absolute w-4 h-4 bg-white rounded-full z-20 shadow-md border-2 border-primary",
+            "absolute w-4 h-4 bg-white rounded-full z-20 shadow-md border-2 border-primary opacity-0 group-hover:opacity-100",
             "hover:scale-110 transition-transform",
-            isResizing && "scale-110 shadow-lg"
+            isResizing && "scale-110 shadow-lg opacity-100"
           )}
           style={{
             ...style,
@@ -157,7 +190,7 @@ export default function ImageCropper({
       ))}
 
       {/* Guidelines when dragging or resizing */}
-      {(isDragging || isResizing) && (
+      {isPositionMode && (isDragging || isResizing) && (
         <div className="absolute inset-0 pointer-events-none z-10">
           <div className="absolute left-1/2 top-0 bottom-0 border-l border-white/30" style={{ transform: 'translateX(-50%)' }} />
           <div className="absolute top-1/2 left-0 right-0 border-t border-white/30" style={{ transform: 'translateY(-50%)' }} />
