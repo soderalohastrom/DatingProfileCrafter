@@ -38,9 +38,9 @@ export default function ProfileForm({ profile, onChange, templateId, isBuiltInTe
       education: profile.education || "",
       interests: profile.interests || "",
       bio: profile.bio || "",
-      slide1PhotoUrl: profile.slide1PhotoUrl || "",
-      slide2PhotoUrl: profile.slide2PhotoUrl || "",
-      slide3PhotoUrl: profile.slide3PhotoUrl || "",
+      slide1PhotoUrl: profile.slide1PhotoUrl || null,
+      slide2PhotoUrl: profile.slide2PhotoUrl || null,
+      slide3PhotoUrl: profile.slide3PhotoUrl || null,
       slideImagePositions: profile.slideImagePositions || null,
     },
   });
@@ -56,9 +56,9 @@ export default function ProfileForm({ profile, onChange, templateId, isBuiltInTe
       education: profile.education || "",
       interests: profile.interests || "",
       bio: profile.bio || "",
-      slide1PhotoUrl: profile.slide1PhotoUrl || "",
-      slide2PhotoUrl: profile.slide2PhotoUrl || "",
-      slide3PhotoUrl: profile.slide3PhotoUrl || "",
+      slide1PhotoUrl: profile.slide1PhotoUrl || null,
+      slide2PhotoUrl: profile.slide2PhotoUrl || null,
+      slide3PhotoUrl: profile.slide3PhotoUrl || null,
       slideImagePositions: profile.slideImagePositions || null,
     });
   }, [profile, form.reset]);
@@ -66,6 +66,21 @@ export default function ProfileForm({ profile, onChange, templateId, isBuiltInTe
   const handleChange = (updatedProfile: Partial<Profile>) => {
     console.log('ProfileForm handleChange - Updating profile:', updatedProfile);
     onChange(updatedProfile);
+  };
+
+  // Handle photo updates for specific slides
+  const handlePhotoUpdate = (url: string, slideNumber: number) => {
+    console.log('handlePhotoUpdate called with:', { url, slideNumber });
+    const photoField = `slide${slideNumber}PhotoUrl` as keyof Profile;
+    const updatedProfile = {
+      ...profile,
+      [photoField]: url,
+      slideImagePositions: {
+        ...profile.slideImagePositions,
+        [slideNumber]: { x: 0, y: 0, scale: 1 }
+      }
+    };
+    handleChange(updatedProfile);
   };
 
   const onSubmit = async (data: InsertProfile) => {
