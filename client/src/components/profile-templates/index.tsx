@@ -30,8 +30,6 @@ export default function ProfileTemplate({
   const handlePhotoUpdate = (url: string, slideNumber: number) => {
     console.log('handlePhotoUpdate called with:', { url, slideNumber });
     if (onUpdatePhoto) {
-      // Update the specific slide photo URL
-      const photoField = `slide${slideNumber}PhotoUrl`;
       onUpdatePhoto(url, slideNumber);
     }
   };

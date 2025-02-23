@@ -108,6 +108,14 @@ export default function ProfileMaker() {
     return ["modern", "classic", "minimal"].includes(template);
   };
 
+  const handlePhotoUpdate = (url: string, slideNumber: number) => {
+    const photoUrlKey = `slide${slideNumber}PhotoUrl` as keyof Profile;
+    setProfile(prev => ({
+      ...prev,
+      [photoUrlKey]: url
+    }));
+  };
+
   return (
     <div className="h-screen bg-background">
       <div className="container mx-auto py-6">
@@ -212,7 +220,7 @@ export default function ProfileMaker() {
                 <ProfileTemplate
                   profile={profile}
                   template={template}
-                  onUpdatePhoto={(url) => setProfile({ ...profile, photoUrl: url })}
+                  onUpdatePhoto={handlePhotoUpdate}
                   onUpdateMatchmakerTake={setMatchmakerTake}
                 />
               </div>

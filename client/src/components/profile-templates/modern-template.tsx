@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { type Profile } from "@shared/schema";
 import { Briefcase, GraduationCap, Heart, Image } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import ImageSelector from "../image-selector";
 import ImageCropper from "../image-cropper";
 import { Textarea } from "@/components/ui/textarea";
@@ -41,42 +41,11 @@ export default function ModernTemplate({
   const [matchmakerTake, setMatchmakerTake] = useState("");
   const [imagePositions, setImagePositions] = useState(profile.slideImagePositions || {});
 
-  useEffect(() => {
-    setImagePositions(profile.slideImagePositions || {});
-  }, [profile.slideImagePositions]);
-
   const handleImageSelect = (url: string) => {
     if (onUpdatePhoto && imageSelector.slideNumber !== null) {
       onUpdatePhoto(url, imageSelector.slideNumber);
-      setImagePositions(prev => ({
-        ...prev,
-        [imageSelector.slideNumber!]: { x: 0, y: 0, scale: 1 }
-      }));
     }
     setImageSelector({ open: false, slideNumber: null });
-  };
-
-  // Get image URL based on slide number
-  const getImageUrl = (slideNumber: number): string | undefined => {
-    const slideUrls = {
-      1: profile.slide1PhotoUrl,
-      2: profile.slide2PhotoUrl,
-      3: profile.slide3PhotoUrl
-    };
-    return slideUrls[slideNumber as keyof typeof slideUrls] || undefined;
-  };
-
-  // Get image position based on slide number
-  const getImagePosition = (slideNumber: number) => {
-    return imagePositions[slideNumber] || { x: 0, y: 0, scale: 1 };
-  };
-
-  // Handle image position updates
-  const handlePositionChange = (position: { x: number; y: number; scale: number }, slideNumber: number) => {
-    setImagePositions(prev => ({
-      ...prev,
-      [slideNumber]: position
-    }));
   };
 
   // Slide 1: Main Profile
@@ -89,12 +58,12 @@ export default function ModernTemplate({
               className="w-[300px] h-[300px] rounded-full border-4 border-white shadow-lg hover:opacity-90 transition-opacity overflow-hidden cursor-pointer"
               onClick={() => setImageSelector({ open: true, slideNumber: 1 })}
             >
-              {getImageUrl(1) ? (
+              {profile.slide1PhotoUrl ? (
                 <ImageCropper
-                  src={getImageUrl(1)!}
+                  src={profile.slide1PhotoUrl}
                   placeholderClassName="w-full h-full"
-                  position={getImagePosition(1)}
-                  onPositionChange={(pos) => handlePositionChange(pos, 1)}
+                  position={imagePositions[1] || { x: 0, y: 0, scale: 1 }}
+                  onPositionChange={(pos) => setImagePositions(prev => ({ ...prev, 1: pos }))}
                 />
               ) : (
                 <div className="w-full h-full bg-muted flex items-center justify-center border-2 border-dashed border-muted-foreground">
@@ -161,12 +130,12 @@ export default function ModernTemplate({
             className="w-[400px] h-[400px] rounded-lg hover:opacity-90 transition-opacity overflow-hidden cursor-pointer"
             onClick={() => setImageSelector({ open: true, slideNumber: 2 })}
           >
-            {getImageUrl(2) ? (
+            {profile.slide2PhotoUrl ? (
               <ImageCropper
-                src={getImageUrl(2)!}
+                src={profile.slide2PhotoUrl}
                 placeholderClassName="w-full h-full"
-                position={getImagePosition(2)}
-                onPositionChange={(pos) => handlePositionChange(pos, 2)}
+                position={imagePositions[2] || { x: 0, y: 0, scale: 1 }}
+                onPositionChange={(pos) => setImagePositions(prev => ({ ...prev, 2: pos }))}
               />
             ) : (
               <div className="w-full h-full bg-muted flex items-center justify-center border-2 border-dashed border-muted-foreground">
@@ -190,13 +159,13 @@ export default function ModernTemplate({
           className="w-full h-full cursor-pointer"
           onClick={() => setImageSelector({ open: true, slideNumber: 3 })}
         >
-          {getImageUrl(3) ? (
+          {profile.slide3PhotoUrl ? (
             <ImageCropper
-              src={getImageUrl(3)!}
+              src={profile.slide3PhotoUrl}
               placeholderClassName="w-full h-full"
               aspectRatio={9/16}
-              position={getImagePosition(3)}
-              onPositionChange={(pos) => handlePositionChange(pos, 3)}
+              position={imagePositions[3] || { x: 0, y: 0, scale: 1 }}
+              onPositionChange={(pos) => setImagePositions(prev => ({ ...prev, 3: pos }))}
             />
           ) : (
             <div className="w-full h-full bg-muted flex items-center justify-center border-2 border-dashed border-muted-foreground">
