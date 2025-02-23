@@ -42,7 +42,8 @@ export default function ImageSelector({
   // Format directory path for API based on context
   const getDirectoryPath = () => {
     if (directory) return directory;
-    return `@/assets/sample-images/${selectedCategory}`;
+    // Use relative path for server-side file system
+    return `client/src/assets/sample-images/${selectedCategory}`;
   };
 
   // Fetch images from the server
