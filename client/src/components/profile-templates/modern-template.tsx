@@ -48,7 +48,6 @@ export default function ModernTemplate({
   const handleImageSelect = (url: string) => {
     if (onUpdatePhoto && imageSelector.slideNumber !== null) {
       onUpdatePhoto(url, imageSelector.slideNumber);
-      // Update image positions with default values for the new image
       setImagePositions(prev => ({
         ...prev,
         [imageSelector.slideNumber!]: { x: 0, y: 0, scale: 1 }
@@ -59,16 +58,12 @@ export default function ModernTemplate({
 
   // Get image URL based on slide number
   const getImageUrl = (slideNumber: number): string | undefined => {
-    switch (slideNumber) {
-      case 1:
-        return profile.slide1PhotoUrl ?? undefined;
-      case 2:
-        return profile.slide2PhotoUrl ?? undefined;
-      case 3:
-        return profile.slide3PhotoUrl ?? undefined;
-      default:
-        return undefined;
-    }
+    const slideUrls = {
+      1: profile.slide1PhotoUrl,
+      2: profile.slide2PhotoUrl,
+      3: profile.slide3PhotoUrl
+    };
+    return slideUrls[slideNumber as keyof typeof slideUrls] || undefined;
   };
 
   // Get image position based on slide number
@@ -83,44 +78,6 @@ export default function ModernTemplate({
       [slideNumber]: position
     }));
   };
-
-  // Render a clickable image placeholder
-  const ImagePlaceholder = ({ 
-    onClick, 
-    className = "",
-    slideNumber,
-    aspectRatio = 1
-  }: { 
-    onClick: () => void,
-    className?: string,
-    slideNumber: number,
-    aspectRatio?: number
-  }) => (
-    <div 
-      className={`relative cursor-pointer ${className}`}
-      onClick={onClick}
-      style={{ aspectRatio }}
-    >
-      {getImageUrl(slideNumber) ? (
-        <div className="w-full h-full overflow-hidden">
-          <ImageCropper
-            src={getImageUrl(slideNumber)!}
-            placeholderClassName="w-full h-full"
-            aspectRatio={aspectRatio}
-            position={getImagePosition(slideNumber)}
-            onPositionChange={(pos) => handlePositionChange(pos, slideNumber)}
-          />
-        </div>
-      ) : (
-        <div className="w-full h-full bg-muted flex items-center justify-center border-2 border-dashed border-muted-foreground">
-          <div className="text-center">
-            <Image className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-            <p className="text-sm text-muted-foreground">Click to select image</p>
-          </div>
-        </div>
-      )}
-    </div>
-  );
 
   // Slide 1: Main Profile
   const MainProfileSlide = (
