@@ -2,24 +2,35 @@ import { useState, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import Draggable from "react-draggable";
 
+interface Position {
+  x: number;
+  y: number;
+  scale: number;
+}
+
 interface ImageCropperProps {
   src: string;
   placeholderClassName?: string;
   aspectRatio?: number;
-  onPositionChange?: (position: { x: number; y: number, scale: number }) => void;
+  position?: Position;
+  onPositionChange?: (position: Position) => void;
 }
 
 export default function ImageCropper({
   src,
   placeholderClassName,
   aspectRatio = 1,
+  position: initialPosition,
   onPositionChange
 }: ImageCropperProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [scale, setScale] = useState(1);
-  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [scale, setScale] = useState(initialPosition?.scale ?? 1);
+  const [position, setPosition] = useState({ 
+    x: initialPosition?.x ?? 0, 
+    y: initialPosition?.y ?? 0 
+  });
   const [isDragging, setIsDragging] = useState(false);
-  
+
   // Corner grabber positions
   const grabbers = [
     { id: 'tl', style: { top: 0, left: 0, cursor: 'nw-resize' } },
@@ -29,8 +40,15 @@ export default function ImageCropper({
   ];
 
   useEffect(() => {
+    if (initialPosition) {
+      setScale(initialPosition.scale);
+      setPosition({ x: initialPosition.x, y: initialPosition.y });
+    }
+  }, [initialPosition]);
+
+  useEffect(() => {
     onPositionChange?.({ ...position, scale });
-  }, [position, scale]);
+  }, [position, scale, onPositionChange]);
 
   const handleDrag = (e: any, data: { x: number; y: number }) => {
     setPosition({ x: data.x, y: data.y });
@@ -43,13 +61,13 @@ export default function ImageCropper({
     const rect = container.getBoundingClientRect();
     const centerX = rect.width / 2;
     const centerY = rect.height / 2;
-    
+
     // Calculate new scale based on grabber movement
     const dx = data.x - centerX;
     const dy = data.y - centerY;
     const distance = Math.sqrt(dx * dx + dy * dy);
     const newScale = Math.max(0.1, Math.min(2, distance / (rect.width / 2)));
-    
+
     setScale(newScale);
   };
 

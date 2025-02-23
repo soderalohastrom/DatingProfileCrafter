@@ -10,7 +10,7 @@ export type TemplateType = "modern" | "classic" | "minimal" | string;
 interface ProfileTemplateProps {
   profile: Partial<Profile>;
   template: TemplateType;
-  onUpdatePhoto?: (url: string) => void;
+  onUpdatePhoto?: (url: string, slideNumber: number) => void;
   onUpdateMatchmakerTake?: (text: string) => void;
 }
 
@@ -24,8 +24,8 @@ export default function ProfileTemplate({
     queryKey: ["/api/admin/themes"],
   });
 
-  // Handle custom templates
-  if (typeof template === 'string' && template.startsWith('custom_')) {
+  // Handle custom templates - temporarily disabled
+  if (false && typeof template === 'string' && template.startsWith('custom_')) {
     const themeId = parseInt(template.split('_')[1]);
     const customTheme = themes.find(t => t.id === themeId);
 
@@ -41,7 +41,7 @@ export default function ProfileTemplate({
     }
   }
 
-  // Handle built-in templates
+  // Handle built-in templates with consistent slide-based image handling
   switch (template) {
     case "modern":
       return <ModernTemplate profile={profile} onUpdatePhoto={onUpdatePhoto} onUpdateMatchmakerTake={onUpdateMatchmakerTake} />;

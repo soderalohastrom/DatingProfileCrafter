@@ -3,16 +3,16 @@ import { type Profile } from "@shared/schema";
 import { Briefcase, GraduationCap, Heart, MapPin, Image } from "lucide-react";
 import { useState } from "react";
 import ImageSelector from "../image-selector";
-import { Textarea } from "@/components/ui/textarea";
 import ImageCropper from "../image-cropper";
+import { Textarea } from "@/components/ui/textarea";
 
 interface ModernTemplateProps {
   profile: Partial<Profile>;
-  onUpdatePhoto?: (url: string, type: "main" | "bio" | "matchmaker") => void;
+  onUpdatePhoto?: (url: string, slideNumber: number) => void;
   onUpdateMatchmakerTake?: (text: string) => void;
 }
 
-// Common slide wrapper component - defined before use
+// Common slide wrapper component
 const SlideWrapper = ({ children, id }: { children: React.ReactNode; id: string }) => (
   <Card 
     className="w-[1920px] h-[1080px] mx-auto mb-8 slide-page overflow-hidden" 
@@ -35,71 +35,47 @@ export default function ModernTemplate({
 }: ModernTemplateProps) {
   const [imageSelector, setImageSelector] = useState<{
     open: boolean;
-    type: "main" | "bio" | "matchmaker" | null;
-    context?: 'headshot' | 'lifestyle' | 'formal';
-  }>({ open: false, type: null });
+    slideNumber: number | null;
+  }>({ open: false, slideNumber: null });
 
   const [matchmakerTake, setMatchmakerTake] = useState("");
-  const [imagePositions, setImagePositions] = useState({
-    main: { x: 0, y: 0, scale: 1 },
-    bio: { x: 0, y: 0, scale: 1 },
-    matchmaker: { x: 0, y: 0, scale: 1 }
-  });
 
   const handleImageSelect = (url: string) => {
-    if (onUpdatePhoto && imageSelector.type) {
-      onUpdatePhoto(url, imageSelector.type);
+    if (onUpdatePhoto && imageSelector.slideNumber !== null) {
+      onUpdatePhoto(url, imageSelector.slideNumber);
     }
-    setImageSelector({ open: false, type: null });
+    setImageSelector({ open: false, slideNumber: null });
   };
 
-  // Get image context based on where it's being used
-  const getImageContext = (type: "main" | "bio" | "matchmaker"): 'headshot' | 'lifestyle' | 'formal' => {
-    switch (type) {
-      case "main":
-        return 'headshot';
-      case "bio":
-        return 'lifestyle';
-      case "matchmaker":
-        return 'formal';
-      default:
-        return 'headshot';
-    }
-  };
-
-  // Get the appropriate image URL based on type
-  const getImageUrl = (type: "main" | "bio" | "matchmaker"): string | undefined => {
-    switch (type) {
-      case "main":
-        return profile.mainPhotoUrl;
-      case "bio":
-        return profile.bioPhotoUrl;
-      case "matchmaker":
-        return profile.matchmakerPhotoUrl;
+  // Get image URL based on slide number
+  const getImageUrl = (slideNumber: number): string | undefined => {
+    switch (slideNumber) {
+      case 1:
+        return profile.slide1PhotoUrl ?? undefined;
+      case 2:
+        return profile.slide2PhotoUrl ?? undefined;
+      case 3:
+        return profile.slide3PhotoUrl ?? undefined;
       default:
         return undefined;
     }
   };
 
-  // Update click handlers to include context
-  const handleImageClick = (type: "main" | "bio" | "matchmaker") => {
-    setImageSelector({ 
-      open: true, 
-      type,
-      context: getImageContext(type)
-    });
+  // Get image position based on slide number
+  const getImagePosition = (slideNumber: number) => {
+    return profile.slideImagePositions?.[slideNumber] || { x: 0, y: 0, scale: 1 };
   };
 
-  // Render a clickable image placeholder or the actual image
+  // Render a clickable image placeholder
   const ImagePlaceholder = ({ 
     onClick, 
     className = "",
-    type,
+    slideNumber,
     aspectRatio = 1
   }: { 
-    onClick: () => void, 
+    onClick: () => void,
     className?: string,
-    type: "main" | "bio" | "matchmaker",
+    slideNumber: number,
     aspectRatio?: number
   }) => (
     <div 
@@ -107,17 +83,15 @@ export default function ModernTemplate({
       onClick={onClick}
       style={{ aspectRatio }}
     >
-      {getImageUrl(type) ? (
-        <ImageCropper
-          src={getImageUrl(type)!}
-          placeholderClassName="w-full h-full"
-          aspectRatio={aspectRatio}
-          position={imagePositions[type]}
-          onPositionChange={(pos) => setImagePositions(prev => ({ 
-            ...prev, 
-            [type]: pos 
-          }))}
-        />
+      {getImageUrl(slideNumber) ? (
+        <div className="w-full h-full overflow-hidden">
+          <ImageCropper
+            src={getImageUrl(slideNumber)!}
+            placeholderClassName="w-full h-full"
+            aspectRatio={aspectRatio}
+            position={getImagePosition(slideNumber)}
+          />
+        </div>
       ) : (
         <div className="w-full h-full bg-muted flex items-center justify-center border-2 border-dashed border-muted-foreground">
           <div className="text-center">
@@ -136,9 +110,9 @@ export default function ModernTemplate({
         <div className="bg-gradient-to-r from-primary/10 to-primary/5 p-16">
           <div className="flex gap-16 items-start">
             <ImagePlaceholder
-              onClick={() => handleImageClick("main")}
+              onClick={() => setImageSelector({ open: true, slideNumber: 1 })}
               className="w-[300px] h-[300px] rounded-full border-4 border-white shadow-lg hover:opacity-90 transition-opacity"
-              type="main"
+              slideNumber={1}
             />
             <div>
               <h2 className="text-7xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
@@ -193,9 +167,9 @@ export default function ModernTemplate({
         </div>
         <div className="flex items-center justify-center bg-gradient-to-br from-primary/5 to-primary/10">
           <ImagePlaceholder
-            onClick={() => handleImageClick("bio")}
+            onClick={() => setImageSelector({ open: true, slideNumber: 2 })}
             className="w-[400px] h-[400px] rounded-lg hover:opacity-90 transition-opacity"
-            type="bio"
+            slideNumber={2}
           />
         </div>
       </div>
@@ -207,9 +181,9 @@ export default function ModernTemplate({
     <SlideWrapper id="slide-3">
       <div className="h-full grid" style={{ gridTemplateColumns: '1fr 3fr' }}>
         <ImagePlaceholder
-          onClick={() => handleImageClick("matchmaker")}
+          onClick={() => setImageSelector({ open: true, slideNumber: 3 })}
           className="w-full h-full"
-          type="matchmaker"
+          slideNumber={3}
           aspectRatio={9/16}
         />
         <div className="p-16 space-y-8">
@@ -240,9 +214,9 @@ export default function ModernTemplate({
 
       <ImageSelector
         open={imageSelector.open}
-        onOpenChange={(open) => !open && setImageSelector({ open: false, type: null })}
+        onOpenChange={(open) => !open && setImageSelector({ open: false, slideNumber: null })}
         onSelect={handleImageSelect}
-        context={imageSelector.context}
+        slideNumber={imageSelector.slideNumber ?? undefined}
       />
     </>
   );

@@ -1,10 +1,10 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { type Profile } from "@shared/schema";
 import { Camera } from "lucide-react";
 import { useState } from "react";
 import ImageSelector from "../image-selector";
 import { Textarea } from "@/components/ui/textarea";
+import ImageCropper from "../image-cropper";
 
 // Import background images
 import backgroundLogo from "@/assets/backgrounds/classic/background_logo.png";
@@ -12,7 +12,7 @@ import backgroundBlank from "@/assets/backgrounds/classic/background_blank.png";
 
 interface ClassicTemplateProps {
   profile: Partial<Profile>;
-  onUpdatePhoto?: (url: string) => void;
+  onUpdatePhoto?: (url: string, slideNumber: number) => void;
   onUpdateMatchmakerTake?: (text: string) => void;
 }
 
@@ -39,14 +39,68 @@ export default function ClassicTemplate({
   onUpdatePhoto,
   onUpdateMatchmakerTake 
 }: ClassicTemplateProps) {
-  const [imageSelector, setImageSelector] = useState<"main" | "bio" | "matchmaker" | null>(null);
+  const [imageSelector, setImageSelector] = useState<{
+    open: boolean;
+    slideNumber: number | null;
+  }>({ open: false, slideNumber: null });
   const [matchmakerTake, setMatchmakerTake] = useState("");
 
   const handleImageSelect = (url: string) => {
-    if (onUpdatePhoto) {
-      onUpdatePhoto(url);
+    if (onUpdatePhoto && imageSelector.slideNumber !== null) {
+      onUpdatePhoto(url, imageSelector.slideNumber);
+    }
+    setImageSelector({ open: false, slideNumber: null });
+  };
+
+  // Get image URL based on slide number
+  const getImageUrl = (slideNumber: number): string | undefined => {
+    switch (slideNumber) {
+      case 1:
+        return profile.slide1PhotoUrl ?? undefined;
+      case 2:
+        return profile.slide2PhotoUrl ?? undefined;
+      case 3:
+        return profile.slide3PhotoUrl ?? undefined;
+      default:
+        return undefined;
     }
   };
+
+  // Get image position based on slide number
+  const getImagePosition = (slideNumber: number) => {
+    return profile.slideImagePositions?.[slideNumber] || { x: 0, y: 0, scale: 1 };
+  };
+
+  // Render a clickable image placeholder or cropped image
+  const ImagePlaceholder = ({ 
+    onClick, 
+    className = "", 
+    slideNumber 
+  }: { 
+    onClick: () => void;
+    className?: string;
+    slideNumber: number;
+  }) => (
+    <div 
+      className={`relative cursor-pointer ${className}`}
+      onClick={onClick}
+    >
+      {getImageUrl(slideNumber) ? (
+        <ImageCropper
+          src={getImageUrl(slideNumber)!}
+          placeholderClassName="w-full h-full"
+          position={getImagePosition(slideNumber)}
+        />
+      ) : (
+        <div className="w-full h-full bg-muted flex items-center justify-center border-2 border-dashed border-muted-foreground">
+          <div className="text-center">
+            <Camera className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+            <p className="text-sm text-muted-foreground">Click to select image</p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 
   // Slide 1: Main Profile with Logo Background
   const MainProfileSlide = (
@@ -63,19 +117,11 @@ export default function ClassicTemplate({
         <div className="flex gap-24">
           {/* Left Column */}
           <div className="flex-1 flex flex-col items-center">
-            <Avatar 
-              className="w-[400px] h-[400px] mb-12 border-4 border-white shadow-lg cursor-pointer hover:opacity-90 transition-opacity"
-              onClick={() => setImageSelector("main")}
-            >
-              <AvatarImage 
-                src={profile.photoUrl} 
-                alt={profile.firstName} 
-                className="object-cover"
-              />
-              <AvatarFallback>
-                <Camera className="w-20 h-20 text-muted-foreground" />
-              </AvatarFallback>
-            </Avatar>
+            <ImagePlaceholder 
+              className="w-[400px] h-[400px] mb-12 rounded-full border-4 border-white shadow-lg hover:opacity-90 transition-opacity overflow-hidden"
+              onClick={() => setImageSelector({ open: true, slideNumber: 1 })}
+              slideNumber={1}
+            />
 
             <div className="text-center">
               <h1 className="text-8xl font-light tracking-wide mb-6">
@@ -122,15 +168,11 @@ export default function ClassicTemplate({
           <p className="text-2xl text-muted-foreground leading-relaxed whitespace-pre-wrap">{profile.bio}</p>
         </div>
         <div className="flex items-center justify-center bg-black/5">
-          <Avatar 
-            className="w-[400px] h-[400px] cursor-pointer hover:opacity-90 transition-opacity"
-            onClick={() => setImageSelector("bio")}
-          >
-            <AvatarImage src={profile.photoUrl} alt="Bio photo" className="object-cover" />
-            <AvatarFallback>
-              <Camera className="w-24 h-24 text-muted-foreground" />
-            </AvatarFallback>
-          </Avatar>
+          <ImagePlaceholder 
+            className="w-[400px] h-[400px] hover:opacity-90 transition-opacity overflow-hidden"
+            onClick={() => setImageSelector({ open: true, slideNumber: 2 })}
+            slideNumber={2}
+          />
         </div>
       </div>
     </SlideWrapper>
@@ -140,17 +182,11 @@ export default function ClassicTemplate({
   const MatchmakerSlide = (
     <SlideWrapper id="slide-3" background={backgroundBlank}>
       <div className="h-full grid" style={{ gridTemplateColumns: '1fr 3fr' }}>
-        <div 
-          className="relative cursor-pointer hover:opacity-90 transition-opacity"
-          onClick={() => setImageSelector("matchmaker")}
-        >
-          <Avatar className="w-full h-full rounded-none">
-            <AvatarImage src={profile.photoUrl} alt="Matchmaker photo" className="object-cover" />
-            <AvatarFallback className="rounded-none">
-              <Camera className="w-24 h-24 text-muted-foreground" />
-            </AvatarFallback>
-          </Avatar>
-        </div>
+        <ImagePlaceholder 
+          className="w-full h-full hover:opacity-90 transition-opacity overflow-hidden"
+          onClick={() => setImageSelector({ open: true, slideNumber: 3 })}
+          slideNumber={3}
+        />
         <div className="p-16 space-y-8">
           <h3 className="text-5xl font-light uppercase tracking-wide">Matchmaker's Take</h3>
           <Textarea
@@ -178,9 +214,10 @@ export default function ClassicTemplate({
       </div>
 
       <ImageSelector
-        open={imageSelector !== null}
-        onOpenChange={(open) => !open && setImageSelector(null)}
+        open={imageSelector.open}
+        onOpenChange={(open) => !open && setImageSelector({ open: false, slideNumber: null })}
         onSelect={handleImageSelect}
+        slideNumber={imageSelector.slideNumber ?? undefined}
       />
     </>
   );

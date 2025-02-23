@@ -11,10 +11,10 @@ export const profiles = pgTable("profiles", {
   education: text("education").notNull(),
   interests: text("interests").notNull(),
   bio: text("bio").notNull(),
-  mainPhotoUrl: text("main_photo_url"),
-  bioPhotoUrl: text("bio_photo_url"),
-  matchmakerPhotoUrl: text("matchmaker_photo_url"),
-  images: jsonb("images").$type<Record<number, string>>(),
+  slide1PhotoUrl: text("slide1_photo_url"),
+  slide2PhotoUrl: text("slide2_photo_url"),
+  slide3PhotoUrl: text("slide3_photo_url"),
+  slideImagePositions: jsonb("slide_image_positions").$type<Record<number, { x: number; y: number; scale: number }>>(),
 });
 
 export const templateThemes = pgTable("template_themes", {

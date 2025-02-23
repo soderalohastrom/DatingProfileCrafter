@@ -8,13 +8,6 @@ import { Button } from "@/components/ui/button";
 import { Image } from "lucide-react";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
 interface ImageData {
   url: string;
@@ -27,7 +20,7 @@ interface ImageSelectorProps {
   onOpenChange: (open: boolean) => void;
   onSelect: (url: string) => void;
   directory?: string;
-  context?: 'headshot' | 'lifestyle' | 'formal' | 'background';
+  slideNumber?: number;
 }
 
 export default function ImageSelector({ 
@@ -35,16 +28,12 @@ export default function ImageSelector({
   onOpenChange, 
   onSelect,
   directory,
-  context = 'headshot'
+  slideNumber
 }: ImageSelectorProps) {
-  const [selectedCategory, setSelectedCategory] = useState<'headshot' | 'lifestyle' | 'formal'>(
-    context === 'background' ? 'headshot' : context as 'headshot' | 'lifestyle' | 'formal'
-  );
-
   // Format directory path for API based on context
   const getDirectoryPath = () => {
     if (directory) return directory;
-    return `assets/sample-images/${selectedCategory}`;
+    return `assets/sample-images/profile`;
   };
 
   // Fetch images from the server
@@ -54,15 +43,12 @@ export default function ImageSelector({
       const params = new URLSearchParams();
       const dirPath = getDirectoryPath();
       params.append('directory', dirPath);
-      console.log('Fetching images from directory:', dirPath);
 
       const response = await fetch(`/api/upload?${params.toString()}`);
       if (!response.ok) {
         throw new Error('Failed to fetch images');
       }
-      const data = await response.json();
-      console.log('Received images:', data);
-      return data;
+      return await response.json();
     }
   });
 
@@ -71,28 +57,11 @@ export default function ImageSelector({
       <DialogContent className="sm:max-w-[800px]">
         <DialogHeader>
           <DialogTitle>
-            {directory?.includes('backgrounds') ? "Select Background Image" : "Select Profile Image"}
+            {directory?.includes('backgrounds') 
+              ? "Select Background Image" 
+              : `Select Image for Slide ${slideNumber}`}
           </DialogTitle>
         </DialogHeader>
-
-        {/* Category Selector - Only show for profile images */}
-        {!directory && (
-          <div className="p-4 border-b">
-            <Select
-              value={selectedCategory}
-              onValueChange={(value: 'headshot' | 'lifestyle' | 'formal') => setSelectedCategory(value)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select image category" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="headshot">Professional Headshots</SelectItem>
-                <SelectItem value="lifestyle">Lifestyle Photos</SelectItem>
-                <SelectItem value="formal">Formal Portraits</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        )}
 
         {/* Loading State */}
         {isLoading && (
@@ -134,7 +103,7 @@ export default function ImageSelector({
           ))}
           {!isLoading && !error && images.length === 0 && (
             <div className="col-span-3 text-center py-8 text-muted-foreground">
-              No images found in category: {selectedCategory}
+              No images found in directory
             </div>
           )}
         </div>
