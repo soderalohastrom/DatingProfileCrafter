@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Image } from "lucide-react";
 import ImageSelector from "../image-selector";
+import ImageCropper from "../image-cropper";
 import { useState } from "react";
 
 interface CustomTemplateProps {
@@ -49,6 +50,8 @@ export default function CustomTemplate({
     type: "placeholder" | null;
   }>({ open: false, type: null });
 
+  const [imagePositions, setImagePositions] = useState<Record<number, { x: number; y: number; scale: number }>>({});
+
   // Fetch elements for all slides
   const slideElements = [1, 2, 3].map(slideNumber => {
     const { data: elements = [] } = useQuery<SlideElement[]>({
@@ -71,11 +74,17 @@ export default function CustomTemplate({
 
     if (hasImage) {
       return (
-        <img
+        <ImageCropper
           src={profile.photoUrl}
-          alt="Profile"
-          className="w-full h-full object-cover"
+          placeholderClassName="w-full h-full"
           style={{ borderRadius: element.properties.borderRadius }}
+          position={imagePositions[element.id] || { x: 0, y: 0, scale: 1 }}
+          onPositionChange={(pos) => 
+            setImagePositions(prev => ({ 
+              ...prev, 
+              [element.id]: pos 
+            }))
+          }
         />
       );
     }
@@ -120,7 +129,7 @@ export default function CustomTemplate({
             {slideElements[index].map((element) => (
               <div
                 key={element.id}
-                className="absolute"
+                className="absolute overflow-hidden"
                 style={{
                   left: element.position.x,
                   top: element.position.y,
