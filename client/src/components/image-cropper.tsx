@@ -122,35 +122,34 @@ export default function ImageCropper({
     >
       {/* Position mode toggle button - always at top-left */}
       {src && (
-        <div className="absolute inset-0 z-30">
-          <Button
-            size="icon"
-            variant={isPositionMode ? "secondary" : "ghost"}
-            className={cn(
-              "absolute left-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity",
-              "bg-white/90 hover:bg-white shadow-md",
-              isPositionMode && "ring-2 ring-primary"
-            )}
-            onClick={(e) => {
-              e.stopPropagation();
-              setIsPositionMode(!isPositionMode);
-            }}
-          >
-            {isPositionMode ? (
-              <Check className="h-4 w-4 text-green-500" />
-            ) : (
-              <Move className="h-4 w-4 text-primary" />
-            )}
-          </Button>
-        </div>
+        <Button
+          size="icon"
+          variant={isPositionMode ? "secondary" : "ghost"}
+          className={cn(
+            "absolute left-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity",
+            "bg-white/90 hover:bg-white shadow-md z-50",
+            isPositionMode && "ring-2 ring-primary"
+          )}
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsPositionMode(!isPositionMode);
+          }}
+        >
+          {isPositionMode ? (
+            <Check className="h-4 w-4 text-green-500" />
+          ) : (
+            <Move className="h-4 w-4 text-primary" />
+          )}
+        </Button>
       )}
 
       {/* Semi-transparent overlay for masked areas */}
       <div 
-        className="absolute inset-0 bg-black/20 pointer-events-none z-10"
+        className="absolute inset-0 bg-black/20 pointer-events-none"
         style={{
           opacity: (isDragging || isResizing) ? 0.4 : isPositionMode ? 0.2 : 0,
-          transition: 'opacity 0.2s ease'
+          transition: 'opacity 0.2s ease',
+          zIndex: 20
         }}
       />
 
@@ -169,7 +168,8 @@ export default function ImageCropper({
           style={{
             transform: `scale(${scale})`,
             transformOrigin: 'center',
-            transition: isDragging ? 'none' : 'transform 0.1s ease'
+            transition: isDragging ? 'none' : 'transform 0.1s ease',
+            zIndex: 10
           }}
         >
           <img
@@ -187,20 +187,21 @@ export default function ImageCropper({
           key={id}
           onMouseDown={(e) => handleGrabberMouseDown(e, id)}
           className={cn(
-            "absolute w-6 h-6 bg-white rounded-full z-20 shadow-md border-2 border-primary opacity-0 group-hover:opacity-100",
+            "absolute w-6 h-6 bg-white rounded-full shadow-md border-2 border-primary opacity-0 group-hover:opacity-100",
             "hover:scale-110 transition-transform",
             isResizing && "scale-110 shadow-lg opacity-100"
           )}
           style={{
             ...style,
-            transition: 'all 0.1s ease'
+            transition: 'all 0.1s ease',
+            zIndex: 30
           }}
         />
       ))}
 
       {/* Guidelines when dragging or resizing */}
       {isPositionMode && (isDragging || isResizing) && (
-        <div className="absolute inset-0 pointer-events-none z-10">
+        <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 40 }}>
           <div className="absolute left-1/2 top-0 bottom-0 border-l border-white/30" style={{ transform: 'translateX(-50%)' }} />
           <div className="absolute top-1/2 left-0 right-0 border-t border-white/30" style={{ transform: 'translateY(-50%)' }} />
         </div>
