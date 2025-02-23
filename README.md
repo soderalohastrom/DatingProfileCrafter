@@ -19,23 +19,49 @@ Each template includes a consistent 3-slide layout:
 - **Slide 1: Main Profile**
   - Primary profile information
   - Key details (location, occupation, education)
-  - Professional headshot
+  - Professional headshot with position/scale controls
 - **Slide 2: Biography**
   - Extended bio text
-  - Secondary profile image
+  - Secondary profile image with position/scale controls
 - **Slide 3: Matchmaker's Take**
-  - Full-height profile image
+  - Full-height profile image with position/scale controls
   - Customizable matchmaker observations
 
 ### Image Management
-- Categorized image selection system:
-  - Headshots: Professional profile photos for main slides
-  - Lifestyle: Casual and activity-based photos for bio sections
-  - Formal: Business portraits for matchmaker sections
+- Image selection and cropping system:
+  - Click empty placeholder to open image selector
+  - Click existing image to enter position/scale mode
+  - Auto-scaling to fit container dimensions
+  - Position adjustment via drag
+  - Scale adjustment via corner handles
 - Pre-curated image library in designated directories
 - Context-aware image selection based on placement
-- Image cropping and position adjustment
 - Standardized 16:9 aspect ratio (1920x1080px)
+
+### Known Issues
+1. Image Cropper Component:
+   - Corner handles may flicker or be difficult to interact with (z-index issues)
+   - Large images need better initial scaling
+   - UI can become unresponsive in position mode
+   - Need clearer visual feedback during interactions
+
+### Next Steps
+1. ImageCropper Improvements:
+   - Fix z-index hierarchy to ensure handles are always clickable
+   - Implement proper corner handle positioning relative to scaled image
+   - Add visual feedback for active state and interactions
+   - Optimize performance for large images
+   - Consider adding a reset position button
+
+2. Image Organization:
+   - Implement categorized image selection (headshots, lifestyle, formal)
+   - Add image upload capability with automatic optimization
+   - Improve image preview and selection UI
+
+3. Template System:
+   - Re-enable custom template support
+   - Improve template switching with proper image state preservation
+   - Add template preview thumbnails
 
 ### Directory Structure
 ```
@@ -63,79 +89,11 @@ assets/
 - Export to multi-page PDF
 - Maintains slide/page structure in exports
 
-## Upcoming Features
-
-### MySQL Database Integration
-- Profile loading via URL parameters (`?profile_id=123456`)
-- Database schema aligned with profile structure
-- Efficient profile data retrieval and caching
-- Real-time profile updates
-- Secure data handling and validation
-
-## Technical Implementation Notes
-
-#### Profile Loading Process
-1. URL Parameter Detection:
-   ```typescript
-   // Example URL: /profile-maker?profile_id=123456
-   const params = new URLSearchParams(window.location.search);
-   const profileId = params.get('profile_id');
-   ```
-
-2. Data Flow:
-   - URL parameter triggers profile load from MySQL
-   - Form fields populate with profile data
-   - Template updates in real-time
-   - Changes sync between form and preview
-
-#### Known Issues and Solutions
-
-##### Image Mapping Across Templates
-Current Issue:
-- Images selected for specific slides are not maintaining their slide-specific positions across different templates
-- When selecting an image in one template's slide, it incorrectly appears in all slides of other templates
-- Image selection state is not properly preserved when switching between templates
-
-Root Causes:
-1. Template Component State Management:
-   - Each template component (Modern, Classic, Minimal) is not correctly accessing slide-specific image URLs
-   - The image position state is being shared incorrectly across templates
-
-2. Image Selection Flow:
-   ```typescript
-   // Current problematic flow
-   slideNumber -> selectedImage -> all templates showing same image
-
-   // Desired flow
-   slideNumber -> selectedImage -> specific slide in current template
-   ```
-
-Proposed Solutions:
-1. Template-Specific Image Mapping:
-   - Ensure each template component maintains its own mapping of images to slides
-   - Use dedicated state variables for each slide's image URL
-   ```typescript
-   slide1PhotoUrl -> Modern.Slide1, Classic.Slide1, Minimal.Slide1
-   slide2PhotoUrl -> Modern.Slide2, Classic.Slide2, Minimal.Slide2
-   slide3PhotoUrl -> Modern.Slide3, Classic.Slide3, Minimal.Slide3
-   ```
-
-2. Image Selection Handler Updates:
-   - Implement strict slide number validation
-   - Add template-specific image position tracking
-   - Ensure proper state updates when switching templates
-
-3. Template Component Refactoring:
-   - Create a shared base template class/interface
-   - Implement template-specific image handling
-   - Add proper cleanup when unmounting templates
-
-
 ## Technology Stack
 - Frontend: React/TypeScript
 - Styling: Tailwind CSS + shadcn/ui
 - State Management: React Query
-- Database: MySQL (upcoming)
+- Database: PostgreSQL
 - Export: html2canvas + jsPDF
 - Routing: wouter
 
