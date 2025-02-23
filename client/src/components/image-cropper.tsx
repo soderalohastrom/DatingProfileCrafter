@@ -27,6 +27,7 @@ export default function ImageCropper({
   onClick
 }: ImageCropperProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const imageRef = useRef<HTMLImageElement>(null);
   const [scale, setScale] = useState(initialPosition?.scale ?? 1);
   const [position, setPosition] = useState({ 
     x: initialPosition?.x ?? 0, 
@@ -36,14 +37,40 @@ export default function ImageCropper({
   const [isResizing, setIsResizing] = useState(false);
   const [initialGrab, setInitialGrab] = useState({ x: 0, y: 0, scale: 1 });
   const [isPositionMode, setIsPositionMode] = useState(false);
+  const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
 
-  // Grabber positions with improved styling
-  const grabbers = [
-    { id: 'tl', style: { top: -6, left: -6, cursor: 'nw-resize' } },
-    { id: 'tr', style: { top: -6, right: -6, cursor: 'ne-resize' } },
-    { id: 'bl', style: { bottom: -6, left: -6, cursor: 'sw-resize' } },
-    { id: 'br', style: { bottom: -6, right: -6, cursor: 'se-resize' } }
-  ];
+  // When image loads, calculate initial scale to fit container
+  useEffect(() => {
+    const image = imageRef.current;
+    if (!image || !containerRef.current) return;
+
+    const handleLoad = () => {
+      const container = containerRef.current;
+      if (!container) return;
+
+      const containerWidth = container.clientWidth;
+      const containerHeight = container.clientHeight;
+      const imageAspect = image.naturalWidth / image.naturalHeight;
+      const containerAspect = containerWidth / containerHeight;
+
+      setImageSize({
+        width: image.naturalWidth,
+        height: image.naturalHeight
+      });
+
+      // Calculate scale to fit container while maintaining aspect ratio
+      if (!initialPosition) {
+        if (imageAspect > containerAspect) {
+          setScale(containerWidth / image.naturalWidth);
+        } else {
+          setScale(containerHeight / image.naturalHeight);
+        }
+      }
+    };
+
+    image.addEventListener('load', handleLoad);
+    return () => image.removeEventListener('load', handleLoad);
+  }, [src]);
 
   useEffect(() => {
     if (initialPosition) {
@@ -63,10 +90,8 @@ export default function ImageCropper({
 
   const handleContainerClick = () => {
     if (src) {
-      // If we have an image, toggle position mode
       setIsPositionMode(!isPositionMode);
     } else if (onClick) {
-      // If no image, trigger image selector
       onClick();
     }
   };
@@ -78,26 +103,33 @@ export default function ImageCropper({
     setInitialGrab({
       x: e.clientX,
       y: e.clientY,
-      scale: scale
+      scale
     });
 
     const handleMouseMove = (moveEvent: MouseEvent) => {
       const container = containerRef.current;
       if (!container) return;
 
-      const rect = container.getBoundingClientRect();
-      const centerX = rect.width / 2;
-      const centerY = rect.height / 2;
-
-      // Calculate distance from center to cursor
       const dx = moveEvent.clientX - initialGrab.x;
       const dy = moveEvent.clientY - initialGrab.y;
 
-      // Adjust scale based on diagonal movement
+      // Scale based on diagonal movement
       const scaleFactor = Math.sqrt(dx * dx + dy * dy) / 200;
       const directionMultiplier = dx + dy > 0 ? 1 : -1;
-      const newScale = Math.max(0.5, Math.min(3, initialGrab.scale + (scaleFactor * directionMultiplier)));
 
+      // Calculate min scale to fit container
+      const containerWidth = container.clientWidth;
+      const containerHeight = container.clientHeight;
+      const minScale = Math.min(
+        containerWidth / imageSize.width,
+        containerHeight / imageSize.height
+      );
+
+      // Update scale with constraints
+      const newScale = Math.max(
+        minScale,
+        Math.min(2, initialGrab.scale + (scaleFactor * directionMultiplier))
+      );
       setScale(newScale);
     };
 
@@ -109,6 +141,20 @@ export default function ImageCropper({
 
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
+  };
+
+  // Calculate corner positions based on scaled image size
+  const getCornerStyle = (corner: string) => {
+    const scaledWidth = imageSize.width * scale;
+    const scaledHeight = imageSize.height * scale;
+
+    switch (corner) {
+      case 'tl': return { top: 0, left: 0, cursor: 'nw-resize' };
+      case 'tr': return { top: 0, left: scaledWidth - 12, cursor: 'ne-resize' };
+      case 'bl': return { top: scaledHeight - 12, left: 0, cursor: 'sw-resize' };
+      case 'br': return { top: scaledHeight - 12, left: scaledWidth - 12, cursor: 'se-resize' };
+      default: return {};
+    }
   };
 
   return (
@@ -123,7 +169,7 @@ export default function ImageCropper({
       style={{ aspectRatio }}
       onClick={handleContainerClick}
     >
-      {/* Semi-transparent overlay for masked areas */}
+      {/* Semi-transparent overlay for active mode */}
       <div 
         className="absolute inset-0 bg-black/20 pointer-events-none"
         style={{
@@ -153,6 +199,7 @@ export default function ImageCropper({
           }}
         >
           <img
+            ref={imageRef}
             src={src}
             alt="Crop preview"
             className="max-w-none"
@@ -162,17 +209,17 @@ export default function ImageCropper({
       </Draggable>
 
       {/* Corner grabbers for resizing - only shown in position mode */}
-      {isPositionMode && grabbers.map(({ id, style }) => (
+      {isPositionMode && ['tl', 'tr', 'bl', 'br'].map((corner) => (
         <div
-          key={id}
-          onMouseDown={(e) => handleGrabberMouseDown(e, id)}
+          key={corner}
+          onMouseDown={(e) => handleGrabberMouseDown(e, corner)}
           className={cn(
             "absolute w-6 h-6 bg-white rounded-full shadow-md border-2 border-primary opacity-0 group-hover:opacity-100",
             "hover:scale-110 transition-transform",
             isResizing && "scale-110 shadow-lg opacity-100"
           )}
           style={{
-            ...style,
+            ...getCornerStyle(corner),
             transition: 'all 0.1s ease',
             zIndex: 30
           }}
