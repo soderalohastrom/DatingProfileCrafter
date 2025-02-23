@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import Draggable from "react-draggable";
 import { Move, Check } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
 interface Position {
   x: number;
@@ -63,7 +62,11 @@ export default function ImageCropper({
   };
 
   const handleContainerClick = () => {
-    if (!isPositionMode && onClick) {
+    if (src) {
+      // If we have an image, toggle position mode
+      setIsPositionMode(!isPositionMode);
+    } else if (onClick) {
+      // If no image, trigger image selector
       onClick();
     }
   };
@@ -120,29 +123,6 @@ export default function ImageCropper({
       style={{ aspectRatio }}
       onClick={handleContainerClick}
     >
-      {/* Position mode toggle button - always at top-left */}
-      {src && (
-        <Button
-          size="icon"
-          variant={isPositionMode ? "secondary" : "ghost"}
-          className={cn(
-            "absolute left-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity",
-            "bg-white/90 hover:bg-white shadow-md z-50",
-            isPositionMode && "ring-2 ring-primary"
-          )}
-          onClick={(e) => {
-            e.stopPropagation();
-            setIsPositionMode(!isPositionMode);
-          }}
-        >
-          {isPositionMode ? (
-            <Check className="h-4 w-4 text-green-500" />
-          ) : (
-            <Move className="h-4 w-4 text-primary" />
-          )}
-        </Button>
-      )}
-
       {/* Semi-transparent overlay for masked areas */}
       <div 
         className="absolute inset-0 bg-black/20 pointer-events-none"
